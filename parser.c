@@ -246,12 +246,15 @@ ast * is_expr_0(Stream *S) {
                 return new_ast((t1=='(')?AST_FCALL:AST_VREF, v); 
             } else if (t1=='(' && t2=='.'*256+'.' && get_token(S)->type==')') {
                 v = vector_init(2);
-                push(v, (void * )a1);//expr_list a2の先頭にa1を入れたものをvとすること！！
-                for(i=0;i<a2->table->_sp;i++) {
-                    push(v, (void*)vector_ref(a2->table,i));
-                }
-                v1=vector_init(1);push(v1,new_ast(AST_EXP_LIST,v));
-                return new_ast(AST_APPLY, v1); 
+                //push(v, (void * )a1);//expr_list a2の先頭にa1を入れたものをvとすること！！
+                //for(i=0;i<a2->table->_sp;i++) {
+                //    push(v, (void*)vector_ref(a2->table,i));
+                //}
+                //v1=vector_init(1);push(v1,new_ast(AST_EXP_LIST,v));
+                //return new_ast(AST_APPLY, v1);
+                a2->type=AST_EXP_LIST_DOTS; 
+                push(v, (void * )a1); push(v, (void * )a2); 
+                return new_ast(AST_FCALL, v); 
             }               
         } else {
             t2 = get_token(S) -> type; 

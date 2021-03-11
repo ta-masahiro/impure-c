@@ -147,6 +147,18 @@ Vector * codegen(ast * a, Vector * env, int tail) {
         case AST_FCALL:     // AST_FCALL [AST_NAME,[AST_EXP_LIST [AST,AST,...]]]
                             //            <0>                     <1,0>,<1,1>...
             // ... macro function ...
+            a1=(ast*)vector_ref(a->table,1);
+            if (a1->type==AST_EXP_LIST_DOTS) { // ->apply
+                v1=vector_init(1+a1->table->_sp);
+                push(v1,(void*)vector_ref(a->table,0));
+                for(i=0;i<a1->table->_sp;i++) {
+                    push(v1,(void*)vector_ref(a1->table,i));
+                }
+                v2=vector_init(1);
+                push(v2,(void*)new_ast(AST_EXP_LIST_DOTS,v1));
+                return codegen(new_ast(AST_APPLY,v2),env,tail);
+            }
+
             n = ((ast*)vector_ref(a->table,1))->table->_sp;
             for(i=0;i<n;i++) {
                 code=vector_append(code,codegen((ast*)vector_ref(((ast*)vector_ref(a->table,1))->table,i),env,FALSE));
