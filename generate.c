@@ -148,7 +148,7 @@ Vector * codegen(ast * a, Vector * env, int tail) {
                             //            <0>                     <1,0>,<1,1>...
             // ... macro function ...
             a1=(ast*)vector_ref(a->table,1);
-            if (a1->type==AST_EXP_LIST_DOTS) { // ->apply
+            if (a1->type==AST_EXP_LIST_DOTS) {                      // if expr_list_dots -> apply
                 v1=vector_init(1+a1->table->_sp);
                 push(v1,(void*)vector_ref(a->table,0));
                 for(i=0;i<a1->table->_sp;i++) {
@@ -156,14 +156,14 @@ Vector * codegen(ast * a, Vector * env, int tail) {
                 }
                 v2=vector_init(1);
                 push(v2,(void*)new_ast(AST_EXP_LIST_DOTS,v1));
-                return codegen(new_ast(AST_APPLY,v2),env,tail);
+                return codegen(new_ast(AST_APPLY,v2),env,tail);     // AST_APPLY [AST_EXP_LIST [expr0,expr1,...]]
             }
-
-            n = ((ast*)vector_ref(a->table,1))->table->_sp;
+                                                                    // general case
+            n = ((ast*)vector_ref(a->table,1))->table->_sp;         // no. of expr_lists
             for(i=0;i<n;i++) {
                 code=vector_append(code,codegen((ast*)vector_ref(((ast*)vector_ref(a->table,1))->table,i),env,FALSE));
             }
-            code = vector_append(code, codegen((ast*)vector_ref(a->table,0),env,FALSE));
+            code = vector_append(code, codegen((ast*)vector_ref(a->table,0),env,FALSE));    // append Function name % expr_list
             push(code, tail ? (void*)TCALL : (void*)CALL);
             push(code, (void*)(long)n);
             return code;
