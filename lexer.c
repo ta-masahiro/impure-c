@@ -421,9 +421,12 @@ token * _get_token(Stream * S){
     // ストリームからtokenを取り出す
     // tokenがなくなったらNULLを返す  
     token * t;
-    char c;
+    char c,*p;
     while (isblank(c=get_char(S))) ;            // 空白を読み飛ばして  
-    if (c =='\n') re_load(S);                   // 改行文字ならもう1行読み込んで  
+    if (c =='\n') {
+        p=re_load(S);                           // 改行文字ならもう1行読み込んで 
+        if (p==NULL) return NULL;               // 
+    }
     else unget_char(S);                         // そうでなければ読み込んだ文字を返して
     // if (c == EOF) return NULL; 
     // unget_char(S); 

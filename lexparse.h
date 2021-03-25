@@ -1,6 +1,7 @@
 #include <ctype.h>
 #include "vector.h"
 #include "symbol.h"
+#include "object.h"
 /*
 typedef struct {
     unsigned long _size;
@@ -59,7 +60,8 @@ typedef enum {
 
 
 typedef struct ast{
-    ast_type type; 
+    ast_type type;
+    obj_type o_type; 
     Vector * table; 
 } ast; 
 /*
@@ -75,8 +77,9 @@ Stream  * new_stream(FILE * f);
 token * new_token(int type, Symbol * s, void * val, Stream * S); 
 token * _get_token(Stream * S); 
 token * get_token(Stream * S) ; 
-void unget_token(Stream * S);  
-ast * new_ast(ast_type type, Vector * table) ;
+void unget_token(Stream * S); 
+void token_print(Vector*buff); 
+ast * new_ast(ast_type type, obj_type o_type,Vector * table) ;
 void ast_print(ast*a, int tablevel) ; 
 ast * is_lit(Stream*S) ; 
 ast * is_var(Stream *S) ; 

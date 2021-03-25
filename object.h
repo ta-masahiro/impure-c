@@ -1,24 +1,28 @@
-#include "general.h"
+#include "vector.h"
 #include <float.h>
 #include <math.h>
 
-enum OBJ_TYPE { INT, LINT, RAT, FLT, LFLT, 
-                PFUNC, UFUNC, 
-                VECT, DICT, PAIR, 
-                IO, 
-}; 
+#ifndef OBJECT
+#define OBJECT
+typedef enum { OBJ_NONE, OBJ_GEN,
+    OBJ_INT, OBJ_LINT, OBJ_RAT, OBJ_FLT,OBJ_LFLT,
+    OBJ_PFUNC, OBJ_UFUNC,
+    OBJ_VECT, OBJ_DICT, OBJ_PAIR,OBJ_SYM,
+    OBJ_IO,
+} obj_type;
+
 typedef struct object {
-    enum OBJ_TYPE type; 
+    obj_type type;
     union {
-        long    intg; 
-        double  flt; 
-        void *  ptr; 
-    } data; 
+        long    intg;
+        double  flt;
+        void *  ptr;
+    } data;
 } object;
 //
 mpz_ptr itol(long n) ;
 double  itof(long n) ;
-mpf_ptr itolf(long n) ; 
+mpf_ptr itolf(long n) ;
 long    litoi(mpz_ptr L);
 mpq_ptr litor(mpz_ptr L);
 double  litof(mpz_ptr L) ;
@@ -41,6 +45,7 @@ object * newRAT_i(long i, long j) ;
 object * newFLT(double d) ;
 object * newLFLT(mpf_ptr F) ;
 object * newLFFT_f(double f) ;
+object * newVECT(Vector*v);
 //
 object * objIADD(long x, long y) ;
 object * objISUB(long x, long y) ;
@@ -55,8 +60,8 @@ object * objLSUB_i(mpz_ptr x, long y) ;
 object * objLMUL(mpz_ptr x, mpz_ptr y) ;
 object * objLDIV(mpz_ptr x, mpz_ptr y) ;
 object * objLMOD(mpz_ptr x, mpz_ptr y) ;
-object * objLPOW(mpz_ptr x, long y) ; 
-object * objRADD(mpq_ptr x, mpq_ptr y); 
+object * objLPOW(mpz_ptr x, long y) ;
+object * objRADD(mpq_ptr x, mpq_ptr y);
 object * objRSUB(mpq_ptr x, mpq_ptr y) ;
 object * objRMUL(mpq_ptr x, mpq_ptr y) ;
 object * objRDIV(mpq_ptr x, mpq_ptr y) ;
@@ -81,10 +86,10 @@ int objLFCMP(mpf_ptr x, mpf_ptr y);
 //
 object * objadd(object * x, object * y);
 object * objsub(object * x, object * y);
-object * objmul(object * x, object * y); 
+object * objmul(object * x, object * y);
 object * objdiv(object * x, object * y);
-object * objmod(object * x, object * y); 
-object * objpow(object * x, object * y); 
+object * objmod(object * x, object * y);
+object * objpow(object * x, object * y);
 int objcmp(object * x, object * y);
 object * objneg(object * x) ;
 object * objabs(object * x) ;
@@ -98,3 +103,4 @@ int objge(object*x,object*y);
 int objeq(object*x,object*y);
 char * objtostr(object * o);
 object * objcpy(object * s);
+#endif

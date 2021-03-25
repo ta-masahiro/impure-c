@@ -5,6 +5,10 @@ void disassy(Vector*v,int i);
 
 int op2_1[] = {'+', '-', '*', '/', '>', '<', '='*256+'=', '>'*256+'=', '<'*256+'=',0};
 int op2_2[] = {ADD, SUB, MUL, DIV, GT, LT, EQ, GEQ, LEQ };
+int op2i_2[] = {IADD, ISUB, IMUL, IDIV, IGT, ILT, IEQ, IGEQ, ILEQ };
+int op2l_2[] = {LADD, LSUB, LMUL, LDIV, LGT, LLT, LEQ, LGEQ, LLEQ };
+int op2r_2[] = {RADD, RSUB, RMUL, RDIV, RGT, RLT, REQ, RGEQ, RLEQ };
+int op2f_2[] = {FADD, FSUB, FMUL, FDIV, FGT, FLT, FEQ, FGEQ, FLEQ };
 int op1_1[] = {'-', '~', '+'*256+'+', '-'*256+'-',0};
 int op1_2[] = {NEG, BNOT,INC,         DEC} ;
 
@@ -26,8 +30,15 @@ Vector * var_location(Symbol * varname, Vector * env) {
     return NULL; 
 }
 
+typedef struct {
+    Vector      *code;
+    obj_type    *type;
+} code_ret;
+
 Vector * codegen(ast * a, Vector * env, int tail) {
     Vector * code = vector_init(10), *code1, *code2,*v,*v1,*v2,*v3,*a_arg_v,*d_arg_v,*pos,*args,*v_expr_body;
+    code_ret* code_s=(code_ret*)malloc(sizeof(code_ret));
+    code_s->code=code;code_s->type=OBJ_NONE;
     ast * a1,*a2,*ast_list;
     int i,j,n,*tp,dcl_flg; 
     long int_num;
@@ -49,7 +60,7 @@ Vector * codegen(ast * a, Vector * env, int tail) {
                         if (a2->type==AST_VAR) {                                        // a2:AST_VAR [symbol_var_name_]
                             v=vector_init(2);
                             push(v,(void*)TOKEN_NONE);push(v,(void*)NULL);
-                            push(a_arg_v,new_ast(AST_LIT,v));                           // a_arg_v:actual arg list
+                            push(a_arg_v,new_ast(AST_LIT,OBJ_NONE,v));                           // a_arg_v:actual arg list
                             push(d_arg_v,(void*)a2);                                    // d_arg_v:dummy arg list
                         } else if (a2->type==AST_SET &&                                 // a2: AST_SET [set_type, AST_VAR [var_name], expr_ast]
                                     ((ast*)vector_ref(a2->table,1))->type==AST_VAR) {   //                        <1>                 <2>
@@ -74,15 +85,18 @@ Vector * codegen(ast * a, Vector * env, int tail) {
                 return code;
             } else {
                 v1=vector_init(2);v2=vector_init(1);
-                push(v1,(void*)new_ast(AST_EXP_LIST,d_arg_v));//ast_print(new_ast(AST_EXP_LIST,v2),0);//dummy arg list
-                push(v2,new_ast(AST_EXP_LIST,v_expr_body));
-                push(v1,(void*)new_ast(AST_ML,v2));//ast_print(new_ast(AST_ML,v5),0) ;      // v3:[AST_EXP_LIST,AST_ML]
-                a1=new_ast(AST_LAMBDA,v1);//ast_print(a1,0);
+                push(v1,(void*)new_ast(AST_EXP_LIST,OBJ_NONE, d_arg_v));//ast_print(new_ast(AST_EXP_LIST,OBJ_NONE,d_arg_v),0);//dummy arg list
+                //push(v2,new_ast(AST_EXP_LIST,((ast*)vector_ref(v_expr_body,v_expr_body->_sp-1))->o_type,v_expr_body));
+                push(v2,new_ast(AST_EXP_LIST,OBJ_NONE,v_expr_body));
+                //push(v1,(void*)new_ast(AST_ML,((ast*)vector_ref(v_expr_body,v_expr_body->_sp-1))->o_type,v2));//ast_print(new_ast(AST_ML,v5),0) ;      // v3:[AST_EXP_LIST,AST_ML]
+                push(v1,(void*)new_ast(AST_ML,OBJ_NONE,v2));//ast_print(new_ast(AST_ML,OBJ_NONE,v2),0) ;      // v3:[AST_EXP_LIST,AST_ML]
+                //a1=new_ast(AST_LAMBDA,((ast*)vector_ref(v_expr_body,v_expr_body->_sp-1))->o_type,v1);ast_print(a1,0);
+                a1=new_ast(AST_LAMBDA,OBJ_NONE,v1);//ast_print(a1,0);
                 //
                 v3=vector_init(3);
                 push(v3,(void*)a1);
-                push(v3,(void*)new_ast(AST_EXP_LIST,a_arg_v));   // actual arg list
-                a2=new_ast(AST_FCALL,v3);                   // AST_FCALL [AST_LAMBDA [AST_EXP_LIST [..],AST_ML [...]],AST_EXP_LIST [...]]
+                push(v3,(void*)new_ast(AST_EXP_LIST,OBJ_NONE,a_arg_v));   // actual arg list
+                a2=new_ast(AST_FCALL,a1->o_type,v3);//ast_print(a2,0);                   // AST_FCALL [AST_LAMBDA [AST_EXP_LIST [..],AST_ML [...]],AST_EXP_LIST [...]]
                 return codegen(a2,env,tail);
             }
         case AST_IF:    // AST_IF,[cond_expr,true_expr,false_expr]
@@ -112,10 +126,10 @@ Vector * codegen(ast * a, Vector * env, int tail) {
                         v1=vector_init(2);
                         push(v1,(void*)(ast*)vector_ref(((ast*)vector_ref(a->table,1))->table,1));//push expr_list
                         push(v1,(void*)vector_ref(a->table,2));
-                        a2=new_ast(AST_LAMBDA,v1);
+                        a2=new_ast(AST_LAMBDA,((ast*)vector_ref(a->table,2))->o_type,v1);
                         v2=vector_init(2);push(v2,(void*)(long)'=');
                         push(v2,(void*)a1);push(v2,(void*)a2);
-                        return codegen(new_ast(AST_SET,v2),env,FALSE);
+                        return codegen(new_ast(AST_SET,a2->o_type,v2),env,FALSE);
                     case AST_VAR:   // AST_SET [set_type, AST_VAR [var_name], right_expr]
                                     //          <0,0>             <1,0>       <2>
                         pos=var_location((Symbol*)vector_ref(((ast*)vector_ref(a->table,1))->table,0),env);
@@ -155,8 +169,8 @@ Vector * codegen(ast * a, Vector * env, int tail) {
                     push(v1,(void*)vector_ref(a1->table,i));
                 }
                 v2=vector_init(1);
-                push(v2,(void*)new_ast(AST_EXP_LIST_DOTS,v1));
-                return codegen(new_ast(AST_APPLY,v2),env,tail);     // AST_APPLY [AST_EXP_LIST [expr0,expr1,...]]
+                push(v2,(void*)new_ast(AST_EXP_LIST_DOTS,((ast*)vector_ref(a1->table,a1->table->_sp-1))->o_type,v1));
+                return codegen(new_ast(AST_APPLY,((ast*)vector_ref(a1->table,a1->table->_sp-1))->o_type,v2),env,tail);     // AST_APPLY [AST_EXP_LIST [expr0,expr1,...]]
             }
                                                                     // general case
             n = ((ast*)vector_ref(a->table,1))->table->_sp;         // no. of expr_lists
@@ -219,6 +233,7 @@ Vector * codegen(ast * a, Vector * env, int tail) {
                 case TOKEN_INT:
                     sscanf(str_symbol->_table,"%ld",&int_num);
                     push(code,(void*)int_num);
+                    //push(code,(void*)newINT(int_num));
                     return code;
                 case TOKEN_STR:
                     push(code,(void*)vector_ref(a->table,1));
@@ -227,11 +242,13 @@ Vector * codegen(ast * a, Vector * env, int tail) {
                     fl_num_p=(double*)malloc(sizeof(double));
                     sscanf(str_symbol->_table,"%lf",fl_num_p);
                     push(code,(void*)fl_num_p);
+                    //push(code,(void*)newFLT(fl_num));
                     return code;
                 case TOKEN_EFLT:
                     fl_num_p=(double*)malloc(sizeof(double));
                     sscanf(str_symbol->_table,"%le",fl_num_p);
                     push(code,(void*)fl_num_p);
+                    //push(code,(void*)newFLT(fl_num));
                     return code;
             }
         case AST_VECT:  // AST_VECT [AST_expr_list [AST_v1,AST_v2,...]]
@@ -253,17 +270,9 @@ char * code_name[] =
      "TCALLS","RTNS", "LDP", "LDL", "FADD", "FSUB","FMUL","FDIV", "FPR", "ITOF","LCPY","OADD","OSUB", "OMUL",
      "ODIV",  "OEQ",  "OLEQ","ITOO","OPR",  "ODEC","OINC","IADD", "ISUB","IMUL","IDIV","IEQ", "ILEQ", "IDEC",
      "IINC",  "LTOO", "FTOO","IJTOO","SPR", "LDIV","OLT", "LT"  , "ILT", "GT",  "IGT", "OGT"  "GEQ",  "IGEQ",
-     "OGEQ",  "NEG",  "INEG","ONEG", "BNOT","APL", "TAPL","$$$" };
-/*
-int op_size[] = \
-          {0,    1,     1,    0,    1,    0,   2,   0,    1,   1,   0,    1,    1,    0,    \
-           0,    1,     2,    0,    0,    0,   0,   0,    1,   0,   0,    0,    0,    0,    \
-           0,    0,     0,    0,    0,    0,   0,   1,    0,   0,   0,    0,    0,    1,    \
-           1,    0,     1,    1,    0,    0,   0,   0,    0,   0,   0 ,   0,    0,    0,    \
-           0,    0,     0,    0,    0,    0,   0,   0,    0,   0,   0,    0,    0,    0,    \
-           0,    0,     0,    0,    0,    0 ,  0,   0,    0,   0,   0,    0,    0,    0,    \
-           0,    0,     0,    0,    0}; 
-*/
+     "OGEQ",  "NEG",  "INEG","ONEG", "BNOT","APL", "TAPL","FEQ",  "FLEQ","FGEQ","FLT", "FGT", "LEQ",  "LLEQ",
+     "LGEQ",  "LLT",  "LGT", "RADD", "RSUB","RMUL","RDIV","REQ",  "RLEQ","RGEQ","RLT", "RGT","$$$" };
+
 void disassy(Vector * code, int indent) {
     int i; long c; 
     Vector * v; char * s; 
@@ -310,10 +319,10 @@ void * _realloc(void * ptr, size_t old_size, size_t new_size) {
     return GC_realloc(ptr, new_size); 
 }
 
-int main(int argc, char argv[]) {
+int main(int argc, char*argv[]) {
     ast *a;
     printf("PURE REPL Version 0.01\nCopyright 2021.03.05- M.Taniguro\n\n>>");
-    Stream *S=new_stream(stdin);
+    Stream *S;
     int token_p;
     Vector*env;
     Vector*code;
@@ -326,22 +335,33 @@ int main(int argc, char argv[]) {
     Vector * Ret = vector_init(500); 
     Vector * Env = vector_init(50); 
     Hash * G = Hash_init(128); // must be 2^n 
-    while (TRUE) {
+    if (argc<=1) S=new_stream(stdin);
+    else {
+        FILE*fp = fopen(argv[1], "r");
+        if (fp == NULL) {printf("file %s doesn't exist\n", argv[1]); return  - 1; }
+        S = new_stream(fp); 
+    }
+
         tokenbuff=vector_init(100);
+    while (TRUE) {
+        //tokenbuff=vector_init(100);
         env=vector_init(10);
         //token_p=tokenbuff->_cp;
         //token_print(tokenbuff);
         if ((a=is_expr(S)) && get_token(S)->type==';') {
             ast_print(a,0);
-            code=codegen(a,env,FALSE);push(code,(void*)STOP);
+            code=codegen(a,env,FALSE);push(code,(void*)STOP);//printf("!!!\n");
             disassy(code,0);
             printf("%ld ok\n>>",(long)eval(Stack,Env,code,Ret,Env,G));
         } else {
             printf("Not expression!\n");
            // tokenbuff->_cp=token_p;
-           //drop_token(S);
-        } 
+           tokenbuff=vector_init(100);
+        }
+        //token_print(tokenbuff); 
         //tokenbuff->_cp=0;tokenbuff->_sp=0;
+        if (get_token(S)==NULL) exit(0);
+        unget_token(S);
     }
 
 }
