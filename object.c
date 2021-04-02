@@ -924,11 +924,34 @@ char * objtostr(object * o) {
         case OBJ_FLT:   sprintf(buf,"%e",o -> data.flt); return buf;
         case OBJ_LFLT:  gmp_snprintf(buf, 1024, "%.Fe",(mpf_ptr)o->data.ptr);return buf;
                         //
+        case OBJ_SYM:   return ((Symbol*)(o->data.ptr))->_table;                //
         case OBJ_VECT:
                         ret=buf;
                         *ret='\0';
                         for(int i=0;i<((Vector*)o->data.ptr)->_sp;i++) {
                             strcat(ret,objtostr((object*)vector_ref(((Vector*)o->data.ptr),i)));
+                        }
+                        return ret;
+    }
+}
+
+char * objtype2str(obj_type type, void* value) {
+    char*ret;
+    char *buf = (char*)malloc(1024*sizeof(char));   /* オーバーフローの可能性ありあとで見直すこと */
+    mp_exp_t e;
+    switch(type){
+        case OBJ_INT:   sprintf(buf, "%ld", (long)value); return buf;
+        case OBJ_LINT:  return mpz_get_str(NULL, 10, (mpz_ptr)value);
+        case OBJ_RAT:   return mpq_get_str(NULL, 10, (mpq_ptr)value);
+        case OBJ_FLT:   sprintf(buf,"%e",*(double*)value); return buf;
+        case OBJ_LFLT:  gmp_snprintf(buf, 1024, "%.Fe",(mpf_ptr)value);return buf;
+        case OBJ_GEN:   return objtostr((object*)value);
+        case OBJ_SYM:   return ((Symbol*)value)->_table;                //
+        case OBJ_VECT:
+                        ret=buf;
+                        *ret='\0';
+                        for(int i=0;i<((Vector*)value)->_sp;i++) {
+                            strcat(ret,objtostr((object*)vector_ref(((Vector*)value),i)));
                         }
                         return ret;
     }

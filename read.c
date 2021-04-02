@@ -124,6 +124,7 @@ Vector * get_code(Stream * s) {
      // vector_print(code);  
     return code; 
 }
+/*
 char * code_name[] = 
     {"STOP",  "LDC",  "LD",  "ADD", "CALL", "RTN", "SEL", "JOIN", "LDF", "SET", "LEQ", "LDG", "GSET", "SUB",
      "DEC",   "TCALL","TSEL","DROP","EQ",   "INC", "MUL", "DIV",  "VEC", "REF", "VSET","HASH","LDH",  "HSET",
@@ -133,6 +134,7 @@ char * code_name[] =
      "IINC",  "LTOO", "FTOO","IJTOO","SPR", "LDIV","OLT", "LT"  , "ILT", "GT",  "IGT", "OGT"  "GEQ",  "IGEQ",
      "OGEQ",  "NEG",  "INEG","ONEG", "BNOT","APL", "TAPL","FEQ",  "FLEQ","FGEQ","FLT", "FGT", "LEQ",  "LLEQ",
      "LGEQ",  "LLT",  "LGT", "RADD", "RSUB","RMUL","RDIV","REQ",  "RLEQ","RGEQ","RLT", "RGT","$$$" };
+*/
 /*
 void code_optimize(Vector * code, Hash *G){
     char * key;

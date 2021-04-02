@@ -16,7 +16,7 @@ typedef struct {
 } Stream;
 
 typedef enum {
-    TOKEN_NONE, TOKEN_INT, TOKEN_RAT, TOKEN_FLT, TOKEN_EFLT, TOKEN_SYM, TOKEN_STR, TOKEN_CHR
+    TOKEN_NONE, TOKEN_INT, TOKEN_LINT, TOKEN_RAT, TOKEN_FLT, TOKEN_EFLT, TOKEN_SYM, TOKEN_STR, TOKEN_CHR
 //  初期状態、整数、分数、小数、指数付き少数、シンボル、文字列、文字 
 } tokenstate; 
 
@@ -50,12 +50,14 @@ typedef enum {
     AST_VECT,       //13:AST_VECT,[ast_expr_list]
     AST_DICT,       //14:
     AST_APPLY,      //15:AST_APPLY,[ast_expr_list]
-    AST_FCALL,      //16:AST_FCALL,[ast,[ast_list]] 
+    AST_FCALL,      //16:AST_FCALL,[ast,[ast_expr_list]] 
     AST_EXP_LIST,   //17:AST_EXP_LIST,[ast_list] 
     AST_CALLCC,     //18:
     AST_PROP,       //19:
     AST_DCL,        //20:AST_DCL expr_list_ast
-    AST_EXP_LIST_DOTS
+    AST_EXP_LIST_DOTS,
+    AST_ARG_LIST,   //22:AST_ARG_LIST,[ast,ast,ast...]
+    AST_ARG_LIST_DOTS,
 } ast_type; 
 
 

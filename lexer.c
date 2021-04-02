@@ -127,7 +127,9 @@ token * is_NUM(Stream * S, tokenstate s, char* buff ) {
         case TOKEN_INT:                           // 「整数」状態
             if (c == '.') {                 // 「.」が来たら小数に移行 
                 *(buff ++) = c; 
-                return is_NUM(S, TOKEN_FLT, buff); 
+                return is_NUM(S, TOKEN_FLT, buff);
+            } else if (c=='L' || c=='l') {
+                return new_token(TOKEN_LINT, new_symbol(STR_BUFF, buff - STR_BUFF), (void*)0, S);
             } else if (c =='/') {           // 「/」が来て数字が続けば分数に移行
                 cc = get_char(S); 
                 if (isdigit(cc)) {

@@ -33,32 +33,33 @@ ast * new_ast(ast_type type, obj_type o_type,Vector * table) {
     return a;
 }
 
+char* ast_type_str[] = {"None","MultiFunction","If","Set","Lambda","While","Class","Operator2",
+                        "Opraor1","VectorRef","VectorSlice","Literal","Variable","Vector",
+                        "Dictionary","ApplyFunction","FunctionCall","Exprlist","CallC/C","Propaeity",
+                        "Declear","ExprListDotted","ArgmentList","argmentListDotted","\0"};
+
 void ast_print(ast*a, int tablevel) {
     int i;
     for (i = 0; i<tablevel; i ++ ) printf("\t");
     ast_type t = a->type;
     switch(t) {
+        // 1 ast type
         case AST_ML:
             printf("type:ML\t");
             printf("objecttype: %d\n",a->o_type);
             ast_print((ast*)(a ->table->_table[0]), tablevel + 1);
             break;
-        case AST_SET:
-            printf("type:SET %ld\t",(long)a->table->_table[0]);
+        // 
+        case AST_SET: case AST_2OP:
+            printf("type: %s %ld\t",ast_type_str[t], (long)a->table->_table[0]);
             printf("objecttype: %d\n",a->o_type);
             ast_print((ast*)a->table->_table[1], tablevel + 1); ast_print((ast*)a->table->_table[2], tablevel + 1);
             break;
-        case AST_WHILE:
-        case AST_IF:
-        case AST_CLASS:
-        case AST_VREF:
-        case AST_SLS:
-        case AST_VECT:
-        case AST_DICT:
-        case AST_DCL:
-        case AST_APPLY:
-        case AST_LAMBDA:
-            printf("type:%d\t", t);
+        // ast list type
+        case AST_WHILE: case AST_IF: case AST_CLASS: case AST_VREF: case AST_SLS: case AST_VECT: case AST_DICT:
+        case AST_DCL:case AST_APPLY: case AST_LAMBDA:case AST_EXP_LIST: case AST_EXP_LIST_DOTS: case AST_ARG_LIST: 
+        case AST_ARG_LIST_DOTS:
+            printf("type:%s\t", ast_type_str[t]);
             printf("objecttype: %d\n",a->o_type);
             for(i = 0; i<a->table->_sp; i ++) ast_print((ast*)(a ->table->_table[i]), tablevel + 1);
             break;
@@ -72,11 +73,11 @@ void ast_print(ast*a, int tablevel) {
             printf("objecttype: %d\t",a->o_type);
             printf("value:%s\n", (char * )((Symbol * )vector_ref(a->table,0))->_table) ;
             break;
-        case AST_2OP:
-            printf("type:2OP %ld\t", (long)(a->table->_table[0]));
-            printf("objecttype: %d\n",a->o_type);
-            ast_print((ast*)a->table->_table[1], tablevel + 1); ast_print((ast*)a->table->_table[2], tablevel + 1);
-            break;
+        //case AST_2OP:
+        //    printf("type:2OP %ld\t", (long)(a->table->_table[0]));
+        //    printf("objecttype: %d\n",a->o_type);
+        //    ast_print((ast*)a->table->_table[1], tablevel + 1); ast_print((ast*)a->table->_table[2], tablevel + 1);
+        //    break;
         case AST_1OP:
             printf("type:1OP %ld\t", (long)(a->table->_table[0]));
             printf("objecttype: %d\n",a->o_type);
@@ -88,16 +89,16 @@ void ast_print(ast*a, int tablevel) {
             ast_print((ast*)a ->table->_table[0], tablevel + 1);
             ast_print((ast*)a ->table->_table[1],tablevel+1);
             break;
-        case AST_EXP_LIST:
-            printf("type:expr_list\t");
-            printf("objecttype: %d\n",a->o_type);
-            for(i=0;i<a->table->_sp;i++) ast_print((ast*)a->table->_table[i],tablevel+1);
-            break;
-        case AST_EXP_LIST_DOTS:
-            printf("type:expr_list_dots\t");
-            printf("objecttype: %d\n",a->o_type);
-            for(i=0;i<a->table->_sp;i++) ast_print((ast*)a->table->_table[i],tablevel+1);
-            break;
+        //case AST_EXP_LIST: case AST_EXP_LIST_DOTS: case AST_ARG_LIST: case AST_ARG_LIST_DOTS:
+        //    printf("type: %s\t",ast_type_str[t]);
+        //    printf("objecttype: %d\n",a->o_type);
+        //    for(i=0;i<a->table->_sp;i++) ast_print((ast*)a->table->_table[i],tablevel+1);
+        //    break;
+        //case AST_EXP_LIST_DOTS:
+        //    printf("type:expr_list_dots\t");
+        //    printf("objecttype: %d\n",a->o_type);
+        //    for(i=0;i<a->table->_sp;i++) ast_print((ast*)a->table->_table[i],tablevel+1);
+        //    break;
     }
 }
 ast *  is_lit(Stream*S) {
@@ -404,11 +405,69 @@ ast * is_expr_2n(Stream * S,int n) {
                 printf("Syntax error! not expression\n");
                 return NULL;
             }
-            }
         }
         tokenbuff->_cp = token_p;
         return NULL;
     }
+}
+
+char*dcl_string[]={"none",   "int",  "lint",  "rational","float", "lfloat","var",\
+    //                  OBJ_NONE,OBJ_INT,OBJ_LINT,OBJ_RAT,    OBJ_FLT,OBJ_LFLT,OBJ_GEN,
+                        "function","function","cont","vector", "dict",   "pair"   ,"string",    \
+    //                  OBJ_PFUNC,  OBJ_UFUNC,OBJ_CNT,OBJ_VECT, OBJ_DICT,  OBJ_PAIR,OBJ_SYM,
+                        "file",(void*)0};
+    //                  OBJ_IO
+
+int string_isin(char* s,char* table[]) {
+    // if is s in table,return table position else -1
+    int i=0;
+    while (TRUE) {
+        if (table[i]==NULL) return -1;
+        if (strcmp(s,table[i])==0) return i;
+        i++;
+    }
+    return -1;
+}
+
+ast * is_arg_list(Stream * S) {
+    // arg_list     : dcl_expr ',' arg_list
+    //              | dcl_expr
+    ast * a1, * a2;
+    token *t,* t1, * t2;
+    Vector * v;
+    int i,token_p = tokenbuff ->_cp;
+
+    //if (a1 = is_dcl_expr(S)) {
+    if ((t=get_token(S))->type == TOKEN_SYM) {
+        if ((i=string_isin(t->source->_table,dcl_string))!=-1) { 
+            if (a1=is_expr(S)) {
+                a1->o_type=i;
+                v=vector_init(3);
+                while (TRUE) {
+                    if ((t1 = get_token(S)) ->type != ',') {
+                        unget_token(S);
+                        push(v,(void*)a1);
+                        return new_ast(AST_ARG_LIST,OBJ_NONE,v);
+                    }
+                    push(v,(void*)a1);
+                    //if (a1 = is_dcl_expr(S)) {
+                    if ((t=get_token(S))->type==TOKEN_SYM) { 
+                        if ((i=string_isin(t->source->_table,dcl_string))!=-1) { 
+                            if (a1=is_expr(S)) {
+                                a1->o_type=i;
+                                continue;
+                            }
+                        }
+                    } 
+                    printf("Syntax error in arg_list\n");
+                    return NULL;
+                }
+            }
+        }
+    }
+    tokenbuff -> _cp = token_p;
+    return NULL;
+}
 
     ast * is_lambda_expr(Stream *S) {
         // lambda_expr  : lambda ( expr_list ..) expr
@@ -422,7 +481,8 @@ ast * is_expr_2n(Stream * S,int n) {
         t=get_token(S);
         if ((t->type)==TOKEN_SYM && strcmp("lambda",t->source->_table)==0) {
             if ((get_token(S)->type)=='(') {
-                if (a1=is_expr_list(S)) {
+                //if (a1=is_expr_list(S)) {
+                if (a1=is_arg_list(S)) {                    // check arg_list
                     if ((t1=get_token(S))->type==')'){
                         if (a2=is_expr(S)) {
                             v=vector_init(2);
@@ -430,7 +490,8 @@ ast * is_expr_2n(Stream * S,int n) {
                             return new_ast(AST_LAMBDA,a2->o_type,v);
                         }
                     } else if (t1->type=='.'*256+'.' && get_token(S)->type==')') {
-                        a1->type=AST_EXP_LIST_DOTS;
+                        //a1->type=AST_EXP_LIST_DOTS;
+                        a1->type=AST_ARG_LIST_DOTS;
                         if (a2=is_expr(S)) {
                             v=vector_init(2);
                             push(v,(void*)a1);push(v,(void*)a2);
@@ -453,6 +514,7 @@ ast * is_expr_2n(Stream * S,int n) {
     }
 
     ast*is_if_expr(Stream*S) {
+        // if_expr  : if expr : expr : expr
         ast*a1,*a2,*a3;
         token*t;
         Vector*v;
@@ -497,6 +559,7 @@ ast * is_expr_2n(Stream * S,int n) {
     int set_op[]={'=','*'*256+'=','/'*256+'=','%'*256+'=','+'*256+'=','-'*256+'=',0};
 
     ast * is_set_expr(Stream * S) {
+        // set_expr : expr_0 [=|+=|-=|*=|/=] expr
         ast* a1,*a2;
         tokentype  t;
         Vector*v;
@@ -513,22 +576,6 @@ ast * is_expr_2n(Stream * S,int n) {
         return NULL;
     }
 
-    char*dcl_string[]={"none",   "var",  "int",  "lint",  "rational","float", "lfloat",\
-        //                  OBJ_NONE,OBJ_GEN,OBJ_INT,OBJ_LINT,OBJ_RAT,   OBJ_FLT, OBJ_LFLT
-        "function","function","vector","dict",   "pair"   ,"string",    \
-            //                  OBJ_PFUNC, OBJ_UFUNC,OBJ_VECT, OBJ_DICT, OBJ_PAIR,OBJ_SYM,
-            "file",(void*)0};
-    //                  OBJ_IO
-
-    int string_isin(char* s,char* table[]) {
-        int i=0;
-        while (TRUE) {
-            if (table[i]==NULL) return -1;
-            if (strcmp(s,table[i])==0) return i;
-            i++;
-        }
-        return -1;
-    }
     ast * is_dcl_expr(Stream*S) {
         int i;
         ast*a;

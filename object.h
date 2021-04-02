@@ -4,9 +4,9 @@
 
 #ifndef OBJECT
 #define OBJECT
-typedef enum { OBJ_NONE, OBJ_GEN,
-    OBJ_INT, OBJ_LINT, OBJ_RAT, OBJ_FLT,OBJ_LFLT,
-    OBJ_PFUNC, OBJ_UFUNC,
+typedef enum { OBJ_NONE=0, 
+    OBJ_INT, OBJ_LINT, OBJ_RAT, OBJ_FLT,OBJ_LFLT,OBJ_GEN,
+    OBJ_PFUNC, OBJ_UFUNC, OBJ_CNT,
     OBJ_VECT, OBJ_DICT, OBJ_PAIR,OBJ_SYM,
     OBJ_IO,
 } obj_type;
@@ -102,5 +102,6 @@ int objgt(object*x,object*y);
 int objge(object*x,object*y);
 int objeq(object*x,object*y);
 char * objtostr(object * o);
+char * objtype2str(obj_type t,void* v);
 object * objcpy(object * s);
 #endif

@@ -2,14 +2,16 @@
 //typedef void*(*Funcpointer)(Vector*);
 
 int op_size[] = \
-{0,    1,     1,    0,    1,    0,   2,   0,    1,   1,   0,    1,    1,    0,    \
-    0,    1,     2,    0,    0,    0,   0,   0,    1,   0,   0,    0,    0,    0,    \
+    {   0,    1,     1,    0,    1,    0,   2,   0,    1,   1,   0,    1,    1,    0,    \
+        0,    1,     2,    0,    0,    0,   0,   0,    1,   0,   0,    0,    0,    0,    \
         0,    0,     0,    0,    0,    0,   0,   1,    0,   0,   0,    0,    0,    1,    \
         1,    0,     1,    1,    0,    0,   0,   0,    0,   0,   0 ,   0,    0,    0,    \
         0,    0,     0,    0,    0,    0,   0,   0,    0,   0,   0,    0,    0,    0,    \
         0,    0,     0,    0,    0,    0 ,  0,   0,    0,   0,   0,    0,    0,    0,    \
         0,    0,     0,    0,    0,    1,   1 ,  0,    0,   0,   0,    0,    0,    0,    \
-        0,    0,     0,    0,    0,    0,   0,   0,    0,   0,   0};
+        0,    0,     0,    0,    0,    0,   0,   0,    0,   0,   0,    0,    0,    0,    \
+        0,    0,     0,    0 ,   0,    0,   0,   0,    0,   0,   0,    0,    0,    0,    \
+        0     };
 
 Vector *tosqs(Vector*code, const void** table) {
     enum CODE op;
@@ -53,8 +55,10 @@ void * eval(Vector * S, Vector * E, Vector * Code, Vector * R, Vector * EE, Hash
             &&_ODIV,  &&_OEQ,  &&_OLEQ,&&_ITOO, &&_OPR ,&&_ODEC,&&_OINC,&&_IADD, &&_ISUB,&&_IMUL,&&_IDIV,&&_IEQ, &&_ILEQ,&&_IDEC,\
             &&_IINC,  &&_LTOO, &&_FTOO,&&_IJTOO,&&_SPR ,&&_LDIV,&&_OLT, &&_LT,   &&_ILT ,&&_GT,  &&_IGT, &&_OGT, &&_GEQ, &&_IGEQ,\
             &&_OGEQ,  &&_NEG,  &&_INEG,&&_ONEG, &&_BNOT,&&_APL, &&_TAPL,&&_FEQ,  &&_FLEQ,&&_FGEQ,&&_FLT, &&_FGT, &&_LEQ, &&_LLEQ,\
-            &&_LGEQ,  &&_LLT,  &&_LGT, &&_RADD, &&_RSUB,&&_RMUL,&&_RDIV,&&_REQ,  &&_RLEQ,&&_RGEQ,&&_RLT, &&_RGT };
-
+            &&_LGEQ,  &&_LLT,  &&_LGT, &&_RADD, &&_RSUB,&&_RMUL,&&_RDIV,&&_REQ,  &&_RLEQ,&&_RGEQ,&&_RLT, &&_RGT, &&_ITOR,&&_ITOF,\
+            &&_LTOR,  &&_LTOF, &&_RTOF,&&_RTOO, &&_LTOI,&&_RTOI,&&_RTOL,&&_FTOI, &&_FTOL,&&_FTOR,&&_LNEG,&&_RNEG,&&_FNEG,&&_LDEC,\
+            &&_LINC};
+ 
     C = tosqs(Code,table);//vector_print(C);
     w = (mpz_ptr)malloc(sizeof(MP_INT)); mpz_init(w);
 _STARt:
@@ -135,6 +139,11 @@ _ITOL:
     mpz_init_set_si(z, (long)pop(S));
     push(S, (void * )z);
     goto * dequeue(C);
+_ITOR:
+    qz=(mpq_ptr)malloc(sizeof(MP_RAT));
+    mpq_set_si(qz,(long)pop(S),1);
+    push(S,(void*)qz);
+    goto * dequeue(C);    
 _ITOF:
     fz = (double*)malloc(sizeof(double));
     *fz=(double)((long)pop(S));
@@ -143,9 +152,58 @@ _ITOF:
 _ITOO:
     push(S,(void*)newINT((long)pop(S)));
     goto*dequeue(C);
+_LTOI:
+    push(S,(void*)mpz_get_si((mpz_ptr)pop(S)));
+_LTOR:
+    qz=(mpq_ptr)malloc(sizeof(MP_RAT));
+    mpq_set_z(qz,(mpz_ptr)pop(S));
+    push(S,(void*)qz);
+    goto * dequeue(C);    
+_LTOF:
+    fz = (double*)malloc(sizeof(double));
+    *fz=mpz_get_d((mpz_ptr)pop(S));
+    push(S, (void * )fz);
+    goto * dequeue(C);
 _LTOO:
     push(S,(void*)newLINT((mpz_ptr)pop(S)));
     goto*dequeue(C);
+_RTOI:
+    z=(mpz_ptr)malloc(sizeof(MP_INT));mpz_init(z);
+    qz=(mpq_ptr)pop(S);
+    mpz_div(z,mpq_numref(qz),mpq_denref(qz));
+    push(S,(void*)mpz_get_si(z));
+    goto*dequeue(C);
+_RTOL:
+    z=(mpz_ptr)malloc(sizeof(MP_INT));mpz_init(z);
+    qz=(mpq_ptr)pop(S);
+    mpz_div(z,mpq_numref(qz),mpq_denref(qz));
+    push(S,(void*)z);
+    goto*dequeue(C);
+_RTOF:
+    fz=(double*)malloc(sizeof(double));
+    *fz=mpq_get_d((mpq_ptr)pop(S));
+    push(S,(void*)fz);
+    goto * dequeue(C);
+_RTOO:
+    push(S,(void*)newRAT((mpq_ptr)pop(S)));
+    goto * dequeue(C);
+_FTOI:
+    fz=(double*)pop(S);
+    push(S,(void*)(long)(*fz));
+    goto * dequeue(C);
+_FTOL:
+    fz=(double*)pop(S);
+    mpz_init_set_d(z,*fz);
+    push(S,z);
+    goto * dequeue(C);
+_FTOR:
+    fz=(double*)pop(S);
+    mpz_init_set_d(z,*fz);
+    qz=(mpq_ptr)malloc(sizeof(MP_RAT));
+    mpq_init(qz);
+    mpq_set_z(qz,z);
+    push(S,qz);
+    goto * dequeue(C);
 _FTOO:
     push(S,(void*)newFLT(*(double*)pop(S)));
     goto*dequeue(C);
@@ -181,6 +239,12 @@ _IDEC:
     S->_table[S ->_sp - 1] = (void * )((long)(S ->_table[S -> _sp - 1]) - 1);
     // (long)(S->_table[S ->_sp - 1]) ++ ;
     goto * dequeue(C);
+_LDEC:
+    z=(mpz_ptr)malloc(sizeof(MP_INT));
+    mpz_init(z);
+    mpz_sub_ui(z,(mpz_ptr)pop(S),1);
+    push(S,z);
+    goto *dequeue(C);
 _ODEC:
     push(S,(void*)objdec((object*)pop(S)));
     goto*dequeue(C);
@@ -188,6 +252,12 @@ _INC:
 _IINC:
     push(S, (void * )((long)(pop(S)) + 1)) ;
     goto * dequeue(C);
+_LINC:
+    z=(mpz_ptr)malloc(sizeof(MP_INT));
+    mpz_init(z);
+    mpz_add_ui(z,(mpz_ptr)pop(S),1);
+    push(S,z);
+    goto *dequeue(C);
 _OINC:
     push(S,(void*)objinc((object*)pop(S)));
     goto*dequeue(C);
@@ -351,6 +421,20 @@ _ONEG:
 _NEG:
 _INEG:
     push(S, (void * )(long)(-(long)pop(S)));
+    goto * dequeue(C);
+_LNEG:
+    z=(mpz_ptr)malloc(sizeof(MP_INT));
+    mpz_neg(z,(mpz_ptr)pop(S));
+    push(S,(void*)z);
+    goto * dequeue(C);
+_RNEG:
+    qz=(mpq_ptr)malloc(sizeof(MP_RAT));
+    mpq_neg(qz,(mpq_ptr)pop(S));
+    push(S,(void*)qz);
+    goto * dequeue(C);
+_FNEG:
+    fz=(double*)malloc(sizeof(double));
+    *fz=-(*(double*)pop(S));
     goto * dequeue(C);
 _BNOT:
     push(S, (void * )(long)(~(long)pop(S)));
