@@ -696,12 +696,13 @@ void * _realloc(void * ptr, size_t old_size, size_t new_size) {
 int main(int argc, char*argv[]) {
     void* value;
     ast *a;
-    printf("PURE REPL Version 0.01\nCopyright 2021.03.05- M.Taniguro\n\n>>");
+    printf("PURE REPL Version 0.02\nCopyright 2021.04.02- M.Taniguro\n\n>>");
     Stream *S;
     int token_p;
     Vector*env;
     Vector*code;
-    code_ret *code_s; 
+    code_ret *code_s;
+    obj_type type; 
     mp_set_memory_functions((void *)GC_malloc, (void * )_realloc, (void * ) GC_free);
 
     Vector * t; 
@@ -725,11 +726,12 @@ int main(int argc, char*argv[]) {
         //token_print(tokenbuff);
         if ((a=is_expr(S)) && get_token(S)->type==';') {
             ast_print(a,0);
-            code_s = codegen(a,env,FALSE);push(code,(void*)STOP);//printf("!!!\n");
-            code=code_s->code;
+            code_s = codegen(a,env,FALSE);
+            code=code_s->code;push(code,(void*)STOP);//printf("!!!\n");
+            type=code_s->type;            
             disassy(code,0,stdout);
             value = eval(Stack,Env,code,Ret,Env,G);
-            printf("%ld ok\n>>",(long)eval(Stack,Env,code,Ret,Env,G));
+            printf("%s ok\n>>", objtype2str(type,eval(Stack,Env,code,Ret,Env,G)));
         } else {
             printf("Not expression!\n");
            // tokenbuff->_cp=token_p;
