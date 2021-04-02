@@ -120,7 +120,10 @@ code_ret * codegen(ast * a, Vector * env, int tail) {
                         code=vector_append(code,code_s1->code);
                         push(v_expr_body,(void*)a1);//ast_print(a1,0);
                     } else {
-                        code=vector_append(code,codegen(a1,env,FALSE));push(code,(void*)DROP);//disassy(code,0);
+                        code_s1 = codegen(a1,env,FALSE);
+                        code = vector_append(code,code_s1->code);
+                        push(code,(void*)DROP);//disassy(code,0);
+                        //code=vector_append(code,codegen(a1,env,FALSE));push(code,(void*)DROP);//disassy(code,0);
                         push(v_expr_body,(void*)a1);//ast_print(a1,0);
                     }
                 }
@@ -241,7 +244,7 @@ code_ret * codegen(ast * a, Vector * env, int tail) {
                 if (a2->type==AST_VAR) {
                     d=(Data*)malloc(sizeof(Data));
                     d->key=(Symbol*)vector_ref(a2->table,0);
-                    d->val=a2->o_type;
+                    d->val=(void*)a2->o_type;
                     push(args,(void*)d);push(v,(void*)a2->o_type);
                 } else {printf("illegal argment!\n");}
             } //for(i=0;i<args->_sp;i++) printf("%s\t",((Symbol*)vector_ref(args,i))->_table);printf("\n");
@@ -266,7 +269,7 @@ code_ret * codegen(ast * a, Vector * env, int tail) {
             a1=(ast*)vector_ref(a->table,1);    // parameter ast
             a2=(ast*)vector_ref(a->table,0);    // function ast
             code_s=codegen(a2,env,FALSE);code2=code_s->code;            
-            if (code_s->arg_type != OBJ_UFUNC) {printf("SyntaxError:Must be Function!\n");return NULL;}
+            if (code_s->type != OBJ_UFUNC) {printf("SyntaxError:Must be Function!\n");return NULL;}
             r_type = code_s->function_r_type;
             v=code_s->arg_type;                 // list of dummy parameter type
             m = v->_cp-1;                       // number of dummy parameters
@@ -286,7 +289,7 @@ code_ret * codegen(ast * a, Vector * env, int tail) {
             for(i=0;i<n;i++) {
                 code_s = codegen((ast*)vector_ref(a1->table,i),env,FALSE);
                 code1 = code_s->code;type1=code_s->type;                            // type1:actual parameter type
-                if (dot && i >= m-1) type2=OBJ_GEN ; else type2 = (int)(long)vecttor_ref(v,i);  // type2:dummy parameter type
+                if (dot && i >= m-1) type2=OBJ_GEN ; else type2 = (int)(long)vector_ref(v,i);  // type2:dummy parameter type
                 if (type1 != type2) push(code1,(void*)conv_op[type1][type2]);
                 code=vector_append(code,code1);
             }
@@ -657,12 +660,12 @@ void disassy(Vector * code, int indent, FILE*fp) {
         switch(c) {  
             case SEL:   case TSEL:
                 fprintf(fp,"%s\n", code_name[c]); 
-                disassy(fp,(Vector * ) dequeue(code), indent ); 
-                disassy(fp,(Vector * ) dequeue(code), indent ); 
+                disassy((Vector * ) dequeue(code), indent ,fp); 
+                disassy((Vector * ) dequeue(code), indent, fp); 
                 break; 
             case LDF:   case LDP:
                 fprintf(fp,"%s\n", code_name[c]); 
-                disassy(fp,(Vector *)dequeue(code), indent ); 
+                disassy((Vector *)dequeue(code), indent,fp ); 
                 break;
             case LD:    case SET:
                 v = (Vector * )dequeue(code); 
