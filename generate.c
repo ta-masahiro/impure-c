@@ -77,7 +77,7 @@ code_ret*new_code(Vector*code,obj_type type) {
 code_ret * codegen(ast * a, Vector * env, int tail) {
     Vector * code = vector_init(10), *code1, *code2,*v,*v1,*v2,*v3,*a_arg_v,*d_arg_v,*pos,*_pos,*args,*v_expr_body;
     code_ret* code_s,*code_s1;
-    code_s->code=code;code_s->type=OBJ_NONE;
+    //code_s->code=code;code_s->type=OBJ_NONE;
     ast *a0,* a1,*a2,*ast_list;
     int i,j,n,*tp,dcl_flg,m,dot; 
     long int_num;
@@ -86,6 +86,7 @@ code_ret * codegen(ast * a, Vector * env, int tail) {
     obj_type ret_obj,type1,type2,r_type;
     Symbol*str_symbol;
     Data*d;
+    //ast_print(a,0);
     switch(a->type) {
         case AST_ML:    //AST_ML [AST_expr_list [AST_1,AST_2,...]]
                         //                       <0,0> <0,1>
@@ -360,9 +361,10 @@ code_ret * codegen(ast * a, Vector * env, int tail) {
             // ... constant macro ...
             return new_code(code,type1);
         case AST_LIT:   // AST_LIT [lit_type,lit_symbol]
+            //printf("###\n");
             lit_type=(tokentype)vector_ref(a->table,0);
             str_symbol=(Symbol*)vector_ref(a->table,1);
-
+            //printf("!!!\n");
             push(code,(void*)LDC);
             switch(lit_type) {
                 case TOKEN_NONE:
@@ -726,12 +728,12 @@ int main(int argc, char*argv[]) {
         //token_print(tokenbuff);
         if ((a=is_expr(S)) && get_token(S)->type==';') {
             ast_print(a,0);
-            code_s = codegen(a,env,FALSE);
+            code_s = codegen(a,env,FALSE);//printf("123\n");
             code=code_s->code;push(code,(void*)STOP);//printf("!!!\n");
             type=code_s->type;            
             disassy(code,0,stdout);
-            value = eval(Stack,Env,code,Ret,Env,G);
-            printf("%s ok\n>>", objtype2str(type,eval(Stack,Env,code,Ret,Env,G)));
+            value = eval(Stack,Env,code,Ret,Env,G);printf("!!!\n");
+            printf("%s ok\n>>", objtype2str(type,value));
         } else {
             printf("Not expression!\n");
            // tokenbuff->_cp=token_p;
