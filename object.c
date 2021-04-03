@@ -939,7 +939,7 @@ int objneq(object*x,object*y){
 
 char * objtostr(object * o) {
     char ret[4096]="[ ";
-    char *buf = (char*)malloc(1024*sizeof(char));   /* オーバーフローの可能性ありあとで見直すこと */
+    char *buf = (char*)malloc(1024*sizeof(char));   // オーバーフローの可能性ありあとで見直すこと
     mp_exp_t e;
     switch(o -> type){
         case OBJ_INT:   sprintf(buf, "%ld", o -> data.intg); return buf;
@@ -961,6 +961,9 @@ char * objtostr(object * o) {
     }
 }
 
+//char*objtostr(object* o) {
+//    return objtype2str(o->type,o->data.ptr);
+//}
 char * objtype2str(obj_type type, void* value) {
     char *buf = (char*)malloc(1024*sizeof(char));   /* オーバーフローの可能性ありあとで見直すこと */
     mp_exp_t e;
@@ -972,6 +975,7 @@ char * objtype2str(obj_type type, void* value) {
         case OBJ_FLT:   sprintf(buf,"%e",*(double*)value); return buf;
         case OBJ_LFLT:  gmp_snprintf(buf, 1024, "%.Fe",(mpf_ptr)value);return buf;
         case OBJ_GEN:   return objtostr((object*)value);
+                        //return objtype2str(((object*)value)->type,((object*)value)->data.ptr);
         case OBJ_SYM:   return ((Symbol*)value)->_table;                //
         case OBJ_VECT://printf("vectorsize:%d",((Vector*)value)->_sp);
                         n=((Vector*)value)->_sp;
