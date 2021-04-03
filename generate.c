@@ -386,7 +386,11 @@ code_ret * codegen(ast * a, Vector * env, int tail) {
                     mpz_set_str(z,str_symbol->_table,10);
                     push(code,(void*)z);//printf("%s\n",objtype2str(OBJ_LINT,(void*)z));
                     return new_code(code,OBJ_LINT);
-                //case TOKEN_RAT:
+                case TOKEN_RAT:
+                    q = (mpq_ptr)malloc(sizeof(MP_RAT));
+                    mpq_init(q);mpq_set_str(q,str_symbol->_table,10);mpq_canonicalize(q);
+                    push(code,(void*)q);
+                    return new_code(code,OBJ_RAT);
                 case TOKEN_STR:
                     push(code,(void*)vector_ref(a->table,1));
                     return new_code(code,OBJ_SYM);
