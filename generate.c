@@ -335,24 +335,25 @@ code_ret * codegen(ast * a, Vector * env, int tail) {
             code_s = codegen((ast*)vector_ref(a->table,2),env,FALSE);
             code2=code_s->code;type2=code_s->type;//disassy(code2,0);
             if (type1 < type2) {
-                push(code1,(void*)conv_op[type1][type2]);printf("%d %d %d\n",type1,type2,conv_op[type1][type2]);
+                push(code1,(void*)conv_op[type1][type2]);printf("%d %d %d %s\n",type1,type2,conv_op[type1][type2],code_name[conv_op[type1][type2]]);
                 ret_obj=type2;
             } else if (type1>type2) {
-                push(code2,(void*)conv_op[type2][type1]);printf("%d %d %d\n",type1,type2,conv_op[type1][type2]);
+                push(code2,(void*)conv_op[type2][type1]);printf("%d %d %d %s\n",type2,type1,conv_op[type2][type1],code_name[conv_op[type2][type1]]);
                 ret_obj=type1;
             } else ret_obj=type1;
             //printf("%d\n",ret_obj);
             code=vector_append(code1,code2);//disassy(code,0,stdin);
-            for(i=0;i<9;i++) {
+            for(i=0;i<=10;i++) {
                 if (op2_1[i]==(int)(long)vector_ref(a->table,0)) break;
             }
-            if (i>=9) {printf("illegal 2oprand\n");return NULL;}
+            if (i>=10) {printf("illegal 2oprand\n");return NULL;}
             push(code,(void*)(long)op2_2[ret_obj][i]);
+            if (op2_3[i] != 0) ret_obj=op2_3[i];
             return new_code(code,ret_obj);
         case AST_1OP: // AST_1OP [op_type,AST_EXPR]
             code_s = codegen((ast*)vector_ref(a->table,1),env,FALSE);
             code=code_s->code;ret_obj=code_s->type;
-            for(i=0;i<3;i++) {
+            for(i=0;i<4;i++) {
                 if (op1_1[i]==(int)(long)vector_ref(a->table,0)) break;
             }
             if (type2=op1_2[type1][i]) {printf("syntax Error:operator is not supported\n");return NULL;}
@@ -756,7 +757,7 @@ int main(int argc, char*argv[]) {
             code=code_s->code;push(code,(void*)STOP);//printf("!!!\n");
             type=code_s->type;printf("%d\n",type);            
             disassy(code,0,stdout);
-            value = eval(Stack,Env,code,Ret,Env,G);//printf("!!!\n");
+            value = eval(Stack,Env,code,Ret,Env,G);
             printf("%s ok\n>>", objtype2str(type,value));
         } else {
             printf("Not expression!\n");

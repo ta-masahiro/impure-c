@@ -938,7 +938,7 @@ int objneq(object*x,object*y){
 }
 
 char * objtostr(object * o) {
-    char*ret;
+    char ret[4096]="[ ";
     char *buf = (char*)malloc(1024*sizeof(char));   /* オーバーフローの可能性ありあとで見直すこと */
     mp_exp_t e;
     switch(o -> type){
@@ -950,19 +950,21 @@ char * objtostr(object * o) {
                         //
         case OBJ_SYM:   return ((Symbol*)(o->data.ptr))->_table;                //
         case OBJ_VECT:
-                        ret=buf;
-                        *ret='\0';
+                        strcpy(buf, "[ ");
                         for(int i=0;i<((Vector*)o->data.ptr)->_sp;i++) {
-                            strcat(ret,objtostr((object*)vector_ref(((Vector*)o->data.ptr),i)));
+                            strcat(buf,objtostr((object*)vector_ref(((Vector*)o->data.ptr),i)));
+                            strcat(buf,",");
                         }
-                        return ret;
+                        strcat(buf," ]");
+                        return buf;
+        default:printf("RntimeError:Illegal print args!\n");
     }
 }
 
 char * objtype2str(obj_type type, void* value) {
-    char*ret;
     char *buf = (char*)malloc(1024*sizeof(char));   /* オーバーフローの可能性ありあとで見直すこと */
     mp_exp_t e;
+    int i,n;
     switch(type){
         case OBJ_INT:   sprintf(buf, "%ld", (long)value); return buf;
         case OBJ_LINT:  return mpz_get_str(NULL, 10, (mpz_ptr)value);
@@ -971,13 +973,18 @@ char * objtype2str(obj_type type, void* value) {
         case OBJ_LFLT:  gmp_snprintf(buf, 1024, "%.Fe",(mpf_ptr)value);return buf;
         case OBJ_GEN:   return objtostr((object*)value);
         case OBJ_SYM:   return ((Symbol*)value)->_table;                //
-        case OBJ_VECT:
-                        ret=buf;
-                        *ret='\0';
-                        for(int i=0;i<((Vector*)value)->_sp;i++) {
-                            strcat(ret,objtostr((object*)vector_ref(((Vector*)value),i)));
+        case OBJ_VECT://printf("vectorsize:%d",((Vector*)value)->_sp);
+                        n=((Vector*)value)->_sp;
+                        strcpy(buf,"[ ");
+                        if (n > 0) {
+                            for(i=0;i<n-1;i++) {//printf("##%s\n",objtostr((object*)vector_ref(((Vector*)value),i)));
+                                strcat(buf,objtostr((object*)vector_ref(((Vector*)value),i)));
+                                strcat(buf,", ");
+                            }
+                            strcat(buf,objtostr((object*)vector_ref(((Vector*)value),n-1)));
                         }
-                        return ret;
+                        strcat(buf," ]");
+                        return buf;
     }
 }
 
