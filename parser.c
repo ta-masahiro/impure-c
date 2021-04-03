@@ -111,6 +111,11 @@ ast *  is_lit(Stream*S) {
             push(v, (void*)(long)t->type); push(v, (void*)t->source);
             a=new_ast(AST_LIT,OBJ_INT,v);
             return a;
+        case TOKEN_LINT:
+            v = vector_init(3);
+            push(v, (void*)(long)t->type); push(v, (void*)t->source);
+            a=new_ast(AST_LIT,OBJ_LINT,v);
+            return a;
         case TOKEN_RAT:
             v = vector_init(3);
             push(v, (void*)(long)t->type); push(v, (void*)t->source);

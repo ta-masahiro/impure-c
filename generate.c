@@ -4,20 +4,20 @@
 void disassy(Vector*v,int i,FILE*fp);
 
 int op2_1[] = {'+', '-', '*', '/', '>', '<', '='*256+'=', '>'*256+'=', '<'*256+'=',0};
-int *op2_2[] = {{0,0,0,0,0,0,0,0,0,0,},    
+enum CODE op2_2[5][10] = {{0,0,0,0,0,0,0,0,0,0,},    
                 //{ADD,  SUB,  MUL,  DIV,  GT,  LT,  EQ,  GEQ,  LEQ , 0},
                 {IADD, ISUB, IMUL, IDIV, IGT, ILT, IEQ, IGEQ, ILEQ, 0},
                 {LADD, LSUB, LMUL, LDIV, LGT, LLT, LEQ, LGEQ, LLEQ, 0},
                 {RADD, RSUB, RMUL, RDIV, RGT, RLT, REQ, RGEQ, RLEQ, 0},
                 {FADD, FSUB, FMUL, FDIV, FGT, FLT, FEQ, FGEQ, FLEQ, 0}};
 int op1_1[] = {'-', '~', '+'*256+'+', '-'*256+'-',0};
-int *op1_2[] = {{0,0,0,0},
+enum CODE op1_2[5][4] = {{0,0,0,0},
               //{NEG, BNOT,INC,DEC},
                 {INEG, BNOT, INC,  DEC },
                 {LNEG, 0,    LINC, LDEC},
                 {RNEG, 0,    0,    0   },
                 {FNEG, 0,    0,    0   }};
-enum CODE *conv_op[] = {{0, 0,    0,    0,    0,    0, 0   },
+enum CODE conv_op[5][7] = {{0, 0,    0,    0,    0,    0, 0   },
                         {0, 0,    ITOL, ITOR, ITOF, 0, ITOO},
                         {0, LTOI, 0   , LTOR, LTOF, 0, LTOO},
                         {0, RTOI, RTOL, 0   , RTOF, 0, RTOO},
@@ -82,6 +82,7 @@ code_ret * codegen(ast * a, Vector * env, int tail) {
     int i,j,n,*tp,dcl_flg,m,dot; 
     long int_num;
     double fl_num,*fl_num_p;
+    mpz_ptr z; mpq_ptr q;
     tokentype lit_type;
     obj_type ret_obj,type1,type2,r_type;
     Symbol*str_symbol;
@@ -320,14 +321,19 @@ code_ret * codegen(ast * a, Vector * env, int tail) {
             }
             return new_code(code,r_type);
         case AST_2OP:   // AST_2OP [op_type,AST_L_EXPR,AST_R_EXPR]
-            code_s = codegen((ast*)vector_ref(a->table,1),env,FALSE);//disassy(code1,0);
-            code1=code_s->code;type1=code_s->type;
-            code_s = codegen((ast*)vector_ref(a->table,2),env,FALSE);//disassy(code2,0);
-            code2=code_s->code;type2=code_s->type;
-            if (type1 < type2) {push(code1,(void*)conv_op[type1][type2]);ret_obj=type2;}
-            else if (type1>type2) {push(code2,(void*)conv_op[type2][type1]);ret_obj=type1;}
-            else ret_obj=type1;
-            code=vector_append(code1,code2);//disassy(code,0);
+            code_s = codegen((ast*)vector_ref(a->table,1),env,FALSE);
+            code1=code_s->code;type1=code_s->type;//disassy(code1,0);
+            code_s = codegen((ast*)vector_ref(a->table,2),env,FALSE);
+            code2=code_s->code;type2=code_s->type;//disassy(code2,0);
+            if (type1 < type2) {
+                push(code1,(void*)conv_op[type1][type2]);
+                ret_obj=type2;
+            } else if (type1>type2) {
+                push(code2,(void*)conv_op[type2][type1]);
+                ret_obj=type1;
+            } else ret_obj=type1;
+            //printf("%d\n",ret_obj);
+            code=vector_append(code1,code2);//disassy(code,0,stdin);
             for(i=0;i<9;i++) {
                 if (op2_1[i]==(int)(long)vector_ref(a->table,0)) break;
             }
@@ -375,7 +381,11 @@ code_ret * codegen(ast * a, Vector * env, int tail) {
                     push(code,(void*)int_num);
                     //push(code,(void*)newINT(int_num));
                     return new_code(code,OBJ_INT);
-                //case TOKEN_LINT:
+                case TOKEN_LINT:
+                    z = (mpz_ptr)malloc(sizeof(MP_INT));
+                    mpz_set_str(z,str_symbol->_table,10);
+                    push(code,(void*)z);//printf("%s\n",objtype2str(OBJ_LINT,(void*)z));
+                    return new_code(code,OBJ_LINT);
                 //case TOKEN_RAT:
                 case TOKEN_STR:
                     push(code,(void*)vector_ref(a->table,1));
