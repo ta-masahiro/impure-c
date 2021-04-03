@@ -1,6 +1,18 @@
 #include "vm.h"
 //typedef void*(*Funcpointer)(Vector*);
 
+char * code_name[] = 
+    {"STOP",  "LDC",  "LD",  "ADD", "CALL", "RTN", "SEL", "JOIN", "LDF", "SET", "LEQ", "LDG", "GSET", "SUB",
+     "DEC",   "TCALL","TSEL","DROP","EQ",   "INC", "MUL", "DIV",  "VEC", "REF", "VSET","HASH","LDH",  "HSET",
+     "VPUSH", "VPOP", "LADD","LSUB","LMUL", "ITOL","LPR", "PCALL","LDM", "DUP", "SWAP","ROT", "_2ROT","CALLS",
+     "TCALLS","RTNS", "LDP", "LDL", "FADD", "FSUB","FMUL","FDIV", "FPR", "ITOF","LCPY","OADD","OSUB", "OMUL",
+     "ODIV",  "OEQ",  "OLEQ","ITOO","OPR",  "ODEC","OINC","IADD", "ISUB","IMUL","IDIV","IEQ", "ILEQ", "IDEC",
+     "IINC",  "LTOO", "FTOO","IJTOO","SPR", "LDIV","OLT", "LT"  , "ILT", "GT",  "IGT", "OGT"  "GEQ",  "IGEQ",
+     "OGEQ",  "NEG",  "INEG","ONEG", "BNOT","APL", "TAPL","FEQ",  "FLEQ","FGEQ","FLT", "FGT", "LEQ",  "LLEQ",
+     "LGEQ",  "LLT",  "LGT", "RADD", "RSUB","RMUL","RDIV","REQ",  "RLEQ","RGEQ","RLT", "RGT", "ITOR", "_ITOF",
+     "LTOR",  "LTOF", "RTOF", "RTOO","LTOI","RTOI","RTOL","FTOI", "FTOL","FTOR", "LNEG","RNEG","FNEG","LDEC",
+     "LINC",  "$$$" };
+
 int op_size[] = \
     {   0,    1,     1,    0,    1,    0,   2,   0,    1,   1,   0,    1,    1,    0,    \
         0,    1,     2,    0,    0,    0,   0,   0,    1,   0,   0,    0,    0,    0,    \
@@ -219,7 +231,7 @@ _ISUB:
     push(S, (void * )((long)pop(S) - i));
     goto * dequeue(C);
 _FSUB:
-    fx=(double*)pop(S);fy=(double*)pop(S);
+    fy=(double*)pop(S);fx=(double*)pop(S);
     fz = (double * )malloc(sizeof(double)); *fz=*fx-(*fy);
     push(S,(void*)fz);
     goto * dequeue(C);
@@ -297,7 +309,7 @@ _IDIV:
     push(S, (void * )((long)pop(S) / p));
     goto * dequeue(C);
 _FDIV:
-    fx=(double*)pop(S);fy=(double*)pop(S);
+    fy=(double*)pop(S);fx=(double*)pop(S);
     fz = (double * )malloc(sizeof(double)); *fz=*fx/(*fy);
     push(S,(void*)fz);
     goto * dequeue(C);

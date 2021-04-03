@@ -326,10 +326,10 @@ code_ret * codegen(ast * a, Vector * env, int tail) {
             code_s = codegen((ast*)vector_ref(a->table,2),env,FALSE);
             code2=code_s->code;type2=code_s->type;//disassy(code2,0);
             if (type1 < type2) {
-                push(code1,(void*)conv_op[type1][type2]);
+                push(code1,(void*)conv_op[type1][type2]);printf("%d %d %d\n",type1,type2,conv_op[type1][type2]);
                 ret_obj=type2;
             } else if (type1>type2) {
-                push(code2,(void*)conv_op[type2][type1]);
+                push(code2,(void*)conv_op[type2][type1]);printf("%d %d %d\n",type1,type2,conv_op[type1][type2]);
                 ret_obj=type1;
             } else ret_obj=type1;
             //printf("%d\n",ret_obj);
@@ -651,6 +651,7 @@ Vector * codegen(ast * a, Vector * env, int tail) {
     } 
 }
 */
+/*
 char * code_name[] = 
     {"STOP",  "LDC",  "LD",  "ADD", "CALL", "RTN", "SEL", "JOIN", "LDF", "SET", "LEQ", "LDG", "GSET", "SUB",
      "DEC",   "TCALL","TSEL","DROP","EQ",   "INC", "MUL", "DIV",  "VEC", "REF", "VSET","HASH","LDH",  "HSET",
@@ -662,7 +663,7 @@ char * code_name[] =
      "LGEQ",  "LLT",  "LGT", "RADD", "RSUB","RMUL","RDIV","REQ",  "RLEQ","RGEQ","RLT", "RGT", "ITOR", "_ITOF",
      "LTOR",  "LTOF", "RTOF", "RTOO","LTOI","RTOI","RTOL","FTOI", "FTOL","FTOR", "LNEG","RNEG","FNEG","LDEC",
      "LINC",  "$$$" };
-
+*/
 void disassy(Vector * code, int indent, FILE*fp) {
     int i; long c; 
     Vector * v; char * s; 
