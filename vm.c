@@ -10,8 +10,8 @@ char * code_name[] =
      "IINC",  "LTOO", "FTOO","IJTOO","SPR", "LDIV","OLT", "LT"  , "ILT", "GT",  "IGT", "OGT"  "GEQ",  "IGEQ",
      "OGEQ",  "NEG",  "INEG","ONEG", "BNOT","APL", "TAPL","FEQ",  "FLEQ","FGEQ","FLT", "FGT", "LEQ",  "LLEQ",
      "LGEQ",  "LLT",  "LGT", "RADD", "RSUB","RMUL","RDIV","REQ",  "RLEQ","RGEQ","RLT", "RGT", "ITOR", "_ITOF",
-     "LTOR",  "LTOF", "RTOF", "RTOO","LTOI","RTOI","RTOL","FTOI", "FTOL","FTOR", "LNEG","RNEG","FNEG","LDEC",
-     "LINC",  "$$$" };
+     "LTOR",  "LTOF", "RTOF", "RTOO","LTOI","RTOI","RTOL","FTOI", "FTOL","FTOR", "LNEG","RNEG","FNEG","LINC",
+     "LDEC",  "NEQ",  "INEQ", "LNEQ","RNEQ","FNEQ","ONEQ","OTOI", "OTOL","OTOR", "OTOF","$$$" };
 
 int op_size[] = \
     {   0,    1,     1,    0,    1,    0,   2,   0,    1,   1,   0,    1,    1,    0,    \
@@ -23,7 +23,7 @@ int op_size[] = \
         0,    0,     0,    0,    0,    1,   1 ,  0,    0,   0,   0,    0,    0,    0,    \
         0,    0,     0,    0,    0,    0,   0,   0,    0,   0,   0,    0,    0,    0,    \
         0,    0,     0,    0 ,   0,    0,   0,   0,    0,   0,   0,    0,    0,    0,    \
-        0     };
+        0,    0,     0,    0,    0,    0,   0,   0,    0,   0,   0,    0};
 
 Vector *tosqs(Vector*code, const void** table) {
     enum CODE op;
@@ -60,16 +60,16 @@ void * eval(Vector * S, Vector * E, Vector * Code, Vector * R, Vector * EE, Hash
     double* fx,*fy,*fz;
     object*o;
     static const void * table[] = {
-        &&_STOP,  &&_LDC,  &&_LD,  &&_ADD,  &&_CALL,&&_RTN, &&_SEL, &&_JOIN, &&_LDF, &&_SET, &&_LEQ, &&_LDG, &&_GSET,&&_SUB,  \
+            &&_STOP,  &&_LDC,  &&_LD,  &&_ADD,  &&_CALL,&&_RTN, &&_SEL, &&_JOIN, &&_LDF, &&_SET, &&_LEQ, &&_LDG, &&_GSET,&&_SUB,  \
             &&_DEC,   &&_TCALL,&&_TSEL,&&_DROP, &&_EQ,  &&_INC, &&_MUL, &&_DIV,  &&_VEC, &&_REF, &&_VSET,&&_HASH,&&_LDH, &&_HSET, \
             &&_VPUSH, &&_VPOP, &&_LADD,&&_LSUB, &&_LMUL,&&_ITOL,&&_LPR, &&_PCALL,&&_LDM, &&_DUP, &&_SWAP,&&_ROT, &&_2ROT,&&_CALLS,\
             &&_TCALLS,&&_RTNS, &&_LDP, &&_LDL,  &&_FADD,&&_FSUB,&&_FMUL,&&_FDIV ,&&_FPR, &&_ITOF,&&_LCPY,&&_OADD,&&_OSUB,&&_OMUL, \
-            &&_ODIV,  &&_OEQ,  &&_OLEQ,&&_ITOO, &&_OPR ,&&_ODEC,&&_OINC,&&_IADD, &&_ISUB,&&_IMUL,&&_IDIV,&&_IEQ, &&_ILEQ,&&_IDEC,\
-            &&_IINC,  &&_LTOO, &&_FTOO,&&_IJTOO,&&_SPR ,&&_LDIV,&&_OLT, &&_LT,   &&_ILT ,&&_GT,  &&_IGT, &&_OGT, &&_GEQ, &&_IGEQ,\
-            &&_OGEQ,  &&_NEG,  &&_INEG,&&_ONEG, &&_BNOT,&&_APL, &&_TAPL,&&_FEQ,  &&_FLEQ,&&_FGEQ,&&_FLT, &&_FGT, &&_LEQ, &&_LLEQ,\
-            &&_LGEQ,  &&_LLT,  &&_LGT, &&_RADD, &&_RSUB,&&_RMUL,&&_RDIV,&&_REQ,  &&_RLEQ,&&_RGEQ,&&_RLT, &&_RGT, &&_ITOR,&&_ITOF,\
-            &&_LTOR,  &&_LTOF, &&_RTOF,&&_RTOO, &&_LTOI,&&_RTOI,&&_RTOL,&&_FTOI, &&_FTOL,&&_FTOR,&&_LNEG,&&_RNEG,&&_FNEG,&&_LDEC,\
-            &&_LINC};
+            &&_ODIV,  &&_OEQ,  &&_OLEQ,&&_ITOO, &&_OPR ,&&_ODEC,&&_OINC,&&_IADD, &&_ISUB,&&_IMUL,&&_IDIV,&&_IEQ, &&_ILEQ,&&_IDEC, \
+            &&_IINC,  &&_LTOO, &&_FTOO,&&_IJTOO,&&_SPR ,&&_LDIV,&&_OLT, &&_LT,   &&_ILT ,&&_GT,  &&_IGT, &&_OGT, &&_GEQ, &&_IGEQ, \
+            &&_OGEQ,  &&_NEG,  &&_INEG,&&_ONEG, &&_BNOT,&&_APL, &&_TAPL,&&_FEQ,  &&_FLEQ,&&_FGEQ,&&_FLT, &&_FGT, &&_LEQ, &&_LLEQ, \
+            &&_LGEQ,  &&_LLT,  &&_LGT, &&_RADD, &&_RSUB,&&_RMUL,&&_RDIV,&&_REQ,  &&_RLEQ,&&_RGEQ,&&_RLT, &&_RGT, &&_ITOR,&&_ITOF, \
+            &&_LTOR,  &&_LTOF, &&_RTOF,&&_RTOO, &&_LTOI,&&_RTOI,&&_RTOL,&&_FTOI, &&_FTOL,&&_FTOR,&&_LNEG,&&_RNEG,&&_FNEG,&&_LINC, \
+            &&_LDEC,  &&_NEQ,  &&_INEQ,&&_LNEQ, &&_RNEQ,&&_FNEQ,&&_ONEQ };
  
     C = tosqs(Code,table);//vector_print(C);
     w = (mpz_ptr)malloc(sizeof(MP_INT)); mpz_init(w);
@@ -219,6 +219,20 @@ _FTOR:
 _FTOO:
     push(S,(void*)newFLT(*(double*)pop(S)));
     goto*dequeue(C);
+_OTOI:
+    push(S,(void*)obj2int((object*)pop(S)));
+    goto*dequeue(C);
+_OTOL:
+    push(S,(void*)obj2long((object*)pop(S)));
+    goto*dequeue(C);
+_OTOR:
+    push(S,(void*)obj2rat((object*)pop(S)));
+    goto*dequeue(C);
+_OTOF:
+    fz=(double*)malloc(sizeof(double));
+    *fz=obj2flt((object*)pop(S));
+    push(S,(void*)fz);
+    goto*dequeue(C);
 _IJTOO://rational number
     push(S,(void*)newRAT_i((long)pop(S),(long)pop(S)));
     goto*dequeue(C);
@@ -346,6 +360,27 @@ _L_EQ:
 _REQ:
     qx = (mpq_ptr)pop(S); qy = (mpq_ptr)pop(S);
     push(S,(void*)(long)(mpq_cmp(qx, qy)==0));
+    goto*dequeue(C);
+// Not Equal
+_ONEQ:
+    push(S, (void * )(long)objneq((object*)pop(S), (object*)pop(S)));
+    goto * dequeue(C);
+_NEQ:
+_INEQ:
+    push(S, (void * )(long)((long)pop(S) != (long)pop(S)));
+    goto * dequeue(C);
+_FNEQ:
+    fx=(double*)pop(S);fy=(double*)pop(S);
+    fz = (double * )malloc(sizeof(double)); *fz=(*fx)!=(*fy);
+    push(S,(void*)fz);
+    goto * dequeue(C);
+_LNEQ:
+    x = (mpz_ptr)pop(S); y = (mpz_ptr)pop(S);
+    push(S,(void*)(long)(mpz_cmp(x, y)!=0));
+    goto*dequeue(C);
+_RNEQ:
+    qx = (mpq_ptr)pop(S); qy = (mpq_ptr)pop(S);
+    push(S,(void*)(long)(mpq_cmp(qx, qy)!=0));
     goto*dequeue(C);
 _OLEQ:
     push(S, (void * )(long)objle((object*)pop(S), (object*)pop(S)));

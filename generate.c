@@ -3,25 +3,33 @@
 
 void disassy(Vector*v,int i,FILE*fp);
 
-int op2_1[] = {'+', '-', '*', '/', '>', '<', '='*256+'=', '>'*256+'=', '<'*256+'=',0};
-enum CODE op2_2[5][10] = {{0,0,0,0,0,0,0,0,0,0,},    
-                //{ADD,  SUB,  MUL,  DIV,  GT,  LT,  EQ,  GEQ,  LEQ , 0},
-                {IADD, ISUB, IMUL, IDIV, IGT, ILT, IEQ, IGEQ, ILEQ, 0},
-                {LADD, LSUB, LMUL, LDIV, LGT, LLT, LEQ, LGEQ, LLEQ, 0},
-                {RADD, RSUB, RMUL, RDIV, RGT, RLT, REQ, RGEQ, RLEQ, 0},
-                {FADD, FSUB, FMUL, FDIV, FGT, FLT, FEQ, FGEQ, FLEQ, 0}};
+int op2_1[] = {'+', '-', '*', '/', '>', '<', '='*256+'=', '!'*256+'=', '>'*256+'=', '<'*256+'=',0};
+enum CODE op2_2[7][11] = {{0,0,0,0,0,0,0,0,0,0,0},    
+              //{ADD,  SUB,  MUL,  DIV,  GT,  LT,  EQ,  NEQ,  GEQ,  LEQ , 0},
+                {IADD, ISUB, IMUL, IDIV, IGT, ILT, IEQ, INEQ, IGEQ, ILEQ, 0},
+                {LADD, LSUB, LMUL, LDIV, LGT, LLT, LEQ, LNEQ, LGEQ, LLEQ, 0},
+                {RADD, RSUB, RMUL, RDIV, RGT, RLT, REQ, RNEQ, RGEQ, RLEQ, 0},
+                {FADD, FSUB, FMUL, FDIV, FGT, FLT, FEQ, FNEQ, FGEQ, FLEQ, 0},
+                {0,    0,    0,    0,    0,   0,   0,   0,    0,    0,    0},
+                {OADD, OSUB, OMUL, ODIV, OGT, OLT, OEQ, ONEQ, OGEQ, OLEQ, 0},
+                };
+obj_type op2_3[]={0,0,0,0,OBJ_INT,OBJ_INT,OBJ_INT,OBJ_INT,OBJ_INT,OBJ_INT,OBJ_INT};
 int op1_1[] = {'-', '~', '+'*256+'+', '-'*256+'-',0};
-enum CODE op1_2[5][4] = {{0,0,0,0},
+enum CODE op1_2[7][4] = {{0,0,0,0},
               //{NEG, BNOT,INC,DEC},
                 {INEG, BNOT, INC,  DEC },
                 {LNEG, 0,    LINC, LDEC},
                 {RNEG, 0,    0,    0   },
-                {FNEG, 0,    0,    0   }};
-enum CODE conv_op[5][7] = {{0, 0,    0,    0,    0,    0, 0   },
+                {FNEG, 0,    0,    0   },
+                {0,    0,    0,    0   },
+                {ONEG, 0,    0,    0   }};
+enum CODE conv_op[7][7] = {{0, 0,    0,    0,    0,    0, 0   },
                         {0, 0,    ITOL, ITOR, ITOF, 0, ITOO},
                         {0, LTOI, 0   , LTOR, LTOF, 0, LTOO},
                         {0, RTOI, RTOL, 0   , RTOF, 0, RTOO},
-                        {0, FTOI, FTOL, FTOR, 0   , 0, FTOO}};
+                        {0, FTOI, FTOL, FTOR, 0   , 0, FTOO},
+                        {0, 0,    0,    0,    0,    0, 0   },
+                        {0, OTOI, OTOL, OTOR, OTOF, 0, 0   }};
 
 enum CODE get_convert_op(obj_type from, obj_type to) {
     if (from<=to) return 0;
@@ -155,11 +163,11 @@ code_ret * codegen(ast * a, Vector * env, int tail) {
                 code_s1 = codegen(vector_ref(a -> table, 0),env,FALSE);
                 code=code_s1->code;                                // make cond_code 
                 //code1 = codegen(vector_ref(a->table,1),env,TRUE);push(code1,(void*)RTN);            // make true_code
-                code_s1 = codegen(vector_ref(a->table,1),env,TRUE);push(code1,(void*)RTN);            // make true_code
-                code1=code_s1->code;type1=code_s1->type;
+                code_s1 = codegen(vector_ref(a->table,1),env,TRUE);            // make true_code
+                code1=code_s1->code;type1=code_s1->type;push(code1,(void*)RTN);
                 //code2 = codegen(vector_ref(a->table,2),env,TRUE);push(code2,(void*)RTN);            // make false_code
-                code_s1 = codegen(vector_ref(a->table,2),env,TRUE);push(code2,(void*)RTN);            // make false_code
-                code2=code_s1->code;type2=code_s1->type;
+                code_s1 = codegen(vector_ref(a->table,2),env,TRUE);            // make false_code
+                code2=code_s1->code;type2=code_s1->type;push(code2,(void*)RTN);
                 push(code,(void*)TSEL);
                 if (type1 == type2) {
                     push(code ,(void*)code1); push(code,(void*)code2);       // push TSEL and true_code,false_code
@@ -172,15 +180,16 @@ code_ret * codegen(ast * a, Vector * env, int tail) {
                 }
             } else {    // -> cond_code SEL true_code+JOIN false_code+JOIN
                 //code = codegen(vector_ref(a -> table, 0),env,FALSE);
+                printf("if in!\n");
                 code_s1 = codegen(vector_ref(a -> table, 0),env,FALSE);
-                code=code_s1->code;                                // make cond_code 
+                code=code_s1->code;// disassy(code,0,stdout);                               // make cond_code 
                 //code1 = codegen(vector_ref(a->table,1),env,TRUE);push(code1,(void*)JOIN); 
-                code_s1 = codegen(vector_ref(a->table,1),env,TRUE);push(code1,(void*)JOIN);            // make true_code
-                code1=code_s1->code;type1=code_s1->type;
+                code_s1 = codegen(vector_ref(a->table,1),env,TRUE);            // make true_code
+                code1=code_s1->code;type1=code_s1->type;push(code1,(void*)JOIN);//disassy(code1,0,stdout);
                 //code2 = codegen(vector_ref(a->table,2),env,TRUE);push(code2,(void*)JOIN); 
-                code_s1 = codegen(vector_ref(a->table,2),env,TRUE);push(code2,(void*)JOIN);            // make false_code
-                code2=code_s1->code;type2=code_s1->type;
-                push(code, (void * )SEL); //push(code,(void*)code1); push(code,(void*)code2);
+                code_s1 = codegen(vector_ref(a->table,2),env,TRUE);            // make false_code
+                code2=code_s1->code;type2=code_s1->type;push(code2,(void*)JOIN);//disassy(code2,0,stdout);
+                push(code, (void * )SEL); 
                 if (type1 == type2) {
                     push(code ,(void*)code1); push(code,(void*)code2);       // push TSEL and true_code,false_code
                     return new_code(code,type1);
@@ -745,9 +754,9 @@ int main(int argc, char*argv[]) {
             ast_print(a,0);
             code_s = codegen(a,env,FALSE);//printf("123\n");
             code=code_s->code;push(code,(void*)STOP);//printf("!!!\n");
-            type=code_s->type;            
+            type=code_s->type;printf("%d\n",type);            
             disassy(code,0,stdout);
-            value = eval(Stack,Env,code,Ret,Env,G);printf("!!!\n");
+            value = eval(Stack,Env,code,Ret,Env,G);//printf("!!!\n");
             printf("%s ok\n>>", objtype2str(type,value));
         } else {
             printf("Not expression!\n");

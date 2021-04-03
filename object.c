@@ -174,6 +174,26 @@ object*newOBJ(obj_type t, void* v) {
     }
 }
 
+long obj2int(object*o) {
+    if (o->type != OBJ_INT) {printf("RuntimeErroe:Must be integer!\n");return 0;}
+    return o->data.intg;
+}
+
+ mpz_ptr obj2long(object*o) {
+    if (o->type != OBJ_LINT) {printf("RuntimeErroe:Must be LongInteger!\n");return NULL;}
+    return (mpz_ptr)o->data.ptr;
+}
+
+ mpq_ptr obj2rat(object*o) {
+    if (o->type != OBJ_RAT) {printf("RuntimeErroe:Must be Rational!\n");return NULL;}
+    return (mpq_ptr)o->data.ptr;
+}
+
+ double obj2flt(object*o) {
+    if (o->type != OBJ_FLT) {printf("RuntimeErroe:Must be Float!\n");return 0;}
+    return o->data.flt;
+}
+
 object * objIADD(long x, long y) {
     object * o = (object * )malloc(sizeof(object));
     o -> data.intg = x + y;
@@ -910,6 +930,10 @@ int objge(object*x,object*y){
 }
 int objeq(object*x,object*y){
     if (objcmp(x,y)==0) return TRUE;
+    return FALSE;
+}
+int objneq(object*x,object*y){
+    if (objcmp(x,y)!=0) return TRUE;
     return FALSE;
 }
 

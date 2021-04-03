@@ -46,6 +46,10 @@ object * newFLT(double d) ;
 object * newLFLT(mpf_ptr F) ;
 object * newLFFT_f(double f) ;
 object * newVECT(Vector*v);
+long obj2int(object*o);
+mpz_ptr obj2long(object*o);
+mpq_ptr obj2rat(object*o);
+double obj2flt(object*o);
 //
 object * objIADD(long x, long y) ;
 object * objISUB(long x, long y) ;
@@ -101,6 +105,7 @@ int objle(object*x,object*y);
 int objgt(object*x,object*y);
 int objge(object*x,object*y);
 int objeq(object*x,object*y);
+int objneq(object*x,object*y);
 char * objtostr(object * o);
 char * objtype2str(obj_type t,void* v);
 object * objcpy(object * s);
