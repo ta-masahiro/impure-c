@@ -1,4 +1,5 @@
 #include "vector.h"
+#include "symbol.h"
 #include <float.h>
 #include <math.h>
 
@@ -46,6 +47,7 @@ object * newFLT(double d) ;
 object * newLFLT(mpf_ptr F) ;
 object * newLFFT_f(double f) ;
 object * newVECT(Vector*v);
+object * newSTR(Symbol*s);
 long obj2int(object*o);
 mpz_ptr obj2long(object*o);
 mpq_ptr obj2rat(object*o);

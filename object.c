@@ -941,6 +941,7 @@ char * objtostr(object * o) {
     char ret[4096]="[ ";
     char *buf = (char*)malloc(1024*sizeof(char));   // オーバーフローの可能性ありあとで見直すこと
     mp_exp_t e;
+    int i,n;
     switch(o -> type){
         case OBJ_INT:   sprintf(buf, "%ld", o -> data.intg); return buf;
         case OBJ_LINT:  return mpz_get_str(NULL, 10, (mpz_ptr)o -> data.ptr);
@@ -950,10 +951,14 @@ char * objtostr(object * o) {
                         //
         case OBJ_SYM:   return ((Symbol*)(o->data.ptr))->_table;                //
         case OBJ_VECT:
+                        n=((Vector*)o->data.ptr)->_sp;
                         strcpy(buf, "[ ");
-                        for(int i=0;i<((Vector*)o->data.ptr)->_sp;i++) {
-                            strcat(buf,objtostr((object*)vector_ref(((Vector*)o->data.ptr),i)));
-                            strcat(buf,",");
+                        if (n>0) {
+                            for(i=0;i<n-1;i++) {
+                                strcat(buf,objtostr((object*)vector_ref(((Vector*)o->data.ptr),i)));
+                                strcat(buf,", ");
+                            }
+                            strcat(buf,objtostr((object*)vector_ref(((Vector*)o->data.ptr),n-1)));
                         }
                         strcat(buf," ]");
                         return buf;
@@ -962,7 +967,7 @@ char * objtostr(object * o) {
 }
 
 //char*objtostr(object* o) {
-//    return objtype2str(o->type,o->data.ptr);
+//    return objtype2str(o->type,(void*)o->data);
 //}
 char * objtype2str(obj_type type, void* value) {
     char *buf = (char*)malloc(1024*sizeof(char));   /* オーバーフローの可能性ありあとで見直すこと */
