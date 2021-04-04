@@ -161,8 +161,8 @@ void code_optimize(Vector * code, Hash *G){
 }
 */
 int search_operand(char * s, char * code_name[]) {
-    int i = 0; 
-    while (TRUE) {
+    int i = 0;//printf("%s\n",s) ;
+    while (TRUE) {//printf("%d:%s\n",i,code_name[i]);
         if (strcmp(code_name[i], "$$$" ) == 0) return  -1; 
         if (strcmp(s, code_name[i]) == 0) return i; 
         i ++ ; 
@@ -176,7 +176,7 @@ Vector * chg_byte_code(Vector * code, Hash * G) {
 
     while (TRUE) {
         if ((sym = (Symbol * )dequeue(code)) == NULL) break;
-        c = sym -> _table;// printf("%s\n", c); 
+        c = sym -> _table; //printf("%s\n", c); 
         op = search_operand(c, code_name);// printf("%d\n", op);  
         switch (op) {
             case SEL:case TSEL:
