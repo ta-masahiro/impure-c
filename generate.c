@@ -335,10 +335,10 @@ code_ret * codegen(ast * a, Vector * env, int tail) {
             code_s = codegen((ast*)vector_ref(a->table,2),env,FALSE);
             code2=code_s->code;type2=code_s->type;//disassy(code2,0);
             if (type1 < type2) {
-                push(code1,(void*)conv_op[type1][type2]);printf("%d %d %d %s\n",type1,type2,conv_op[type1][type2],code_name[conv_op[type1][type2]]);
+                push(code1,(void*)conv_op[type1][type2]);//printf("%d %d %d %s\n",type1,type2,conv_op[type1][type2],code_name[conv_op[type1][type2]]);
                 ret_obj=type2;
             } else if (type1>type2) {
-                push(code2,(void*)conv_op[type2][type1]);printf("%d %d %d %s\n",type2,type1,conv_op[type2][type1],code_name[conv_op[type2][type1]]);
+                push(code2,(void*)conv_op[type2][type1]);//printf("%d %d %d %s\n",type2,type1,conv_op[type2][type1],code_name[conv_op[type2][type1]]);
                 ret_obj=type1;
             } else ret_obj=type1;
             //printf("%d\n",ret_obj);
@@ -349,6 +349,7 @@ code_ret * codegen(ast * a, Vector * env, int tail) {
             if (i>=10) {printf("illegal 2oprand\n");return NULL;}
             push(code,(void*)(long)op2_2[ret_obj][i]);
             if (op2_3[i] != 0) ret_obj=op2_3[i];
+            printf("ret_type:%d\n",ret_obj);
             return new_code(code,ret_obj);
         case AST_1OP: // AST_1OP [op_type,AST_EXPR]
             code_s = codegen((ast*)vector_ref(a->table,1),env,FALSE);

@@ -153,6 +153,7 @@ _ITOL:
     goto * dequeue(C);
 _ITOR:
     qz=(mpq_ptr)malloc(sizeof(MP_RAT));
+    mpq_init(qz);
     mpq_set_si(qz,(long)pop(S),1);
     push(S,(void*)qz);
     goto * dequeue(C);    
@@ -168,6 +169,7 @@ _LTOI:
     push(S,(void*)mpz_get_si((mpz_ptr)pop(S)));
 _LTOR:
     qz=(mpq_ptr)malloc(sizeof(MP_RAT));
+    mpq_init(qz);
     mpq_set_z(qz,(mpz_ptr)pop(S));
     push(S,(void*)qz);
     goto * dequeue(C);    
@@ -350,8 +352,8 @@ _IEQ:
     goto * dequeue(C);
 _FEQ:
     fx=(double*)pop(S);fy=(double*)pop(S);
-    fz = (double * )malloc(sizeof(double)); *fz=(*fx)==(*fy);
-    push(S,(void*)fz);
+    //fz = (double * )malloc(sizeof(double)); *fz=(*fx)==(*fy);
+    push(S,(void*)(long)((*fx)==(*fy)));
     goto * dequeue(C);
 _L_EQ:
     x = (mpz_ptr)pop(S); y = (mpz_ptr)pop(S);
@@ -371,8 +373,7 @@ _INEQ:
     goto * dequeue(C);
 _FNEQ:
     fx=(double*)pop(S);fy=(double*)pop(S);
-    fz = (double * )malloc(sizeof(double)); *fz=(*fx)!=(*fy);
-    push(S,(void*)fz);
+    push(S,(void*)(long)((*fx)!=(*fy)));
     goto * dequeue(C);
 _LNEQ:
     x = (mpz_ptr)pop(S); y = (mpz_ptr)pop(S);
@@ -391,8 +392,7 @@ _ILEQ:
     goto * dequeue(C);
 _FLEQ:
     fx=(double*)pop(S);fy=(double*)pop(S);
-    fz = (double * )malloc(sizeof(double)); *fz=(*fx)>=(*fy);
-    push(S,(void*)fz);
+    push(S,(void*)(long)((*fx)>=(*fy)));
     goto * dequeue(C);
 _LLEQ:
     x = (mpz_ptr)pop(S); y = (mpz_ptr)pop(S);
@@ -411,8 +411,7 @@ _ILT:
     goto * dequeue(C);
 _FLT:
     fx=(double*)pop(S);fy=(double*)pop(S);
-    fz = (double * )malloc(sizeof(double)); *fz=(*fx)>(*fy);
-    push(S,(void*)fz);
+    push(S,(void*)(long)((*fx)>(*fy)));
     goto * dequeue(C);
 _LLT:
     x = (mpz_ptr)pop(S); y = (mpz_ptr)pop(S);
@@ -431,8 +430,7 @@ _IGT:
     goto * dequeue(C);
 _FGT:
     fx=(double*)pop(S);fy=(double*)pop(S);
-    fz = (double * )malloc(sizeof(double)); *fz=(*fx)<(*fy);
-    push(S,(void*)fz);
+    push(S,(void*)(long)((*fx)<(*fy)));
     goto * dequeue(C);
 _LGT:
     x = (mpz_ptr)pop(S); y = (mpz_ptr)pop(S);
@@ -451,8 +449,7 @@ _IGEQ:
     goto * dequeue(C);
 _FGEQ:
     fx=(double*)pop(S);fy=(double*)pop(S);
-    fz = (double * )malloc(sizeof(double)); *fz=(*fx)<=(*fy);
-    push(S,(void*)fz);
+    push(S,(void*)(long)((*fx)<=(*fy)));
     goto * dequeue(C);
 _LGEQ:
     x = (mpz_ptr)pop(S); y = (mpz_ptr)pop(S);
