@@ -158,48 +158,29 @@ code_ret * codegen(ast * a, Vector * env, int tail) {
                 return codegen(a2,env,tail);
             }
         case AST_IF:    // AST_IF,[cond_expr,true_expr,false_expr]
-            if (tail) { // -> cond_code TSEL true_code+RTN false_code+RTN
-                //code = codegen(vector_ref(a -> table, 0),env,FALSE);                                // make cond_code 
+                //printf("if in!\n");
                 code_s1 = codegen(vector_ref(a -> table, 0),env,FALSE);
-                code=code_s1->code;                                // make cond_code 
-                //code1 = codegen(vector_ref(a->table,1),env,TRUE);push(code1,(void*)RTN);            // make true_code
-                code_s1 = codegen(vector_ref(a->table,1),env,TRUE);            // make true_code
-                code1=code_s1->code;type1=code_s1->type;push(code1,(void*)RTN);
-                //code2 = codegen(vector_ref(a->table,2),env,TRUE);push(code2,(void*)RTN);            // make false_code
-                code_s1 = codegen(vector_ref(a->table,2),env,TRUE);            // make false_code
-                code2=code_s1->code;type2=code_s1->type;push(code2,(void*)RTN);
-                push(code,(void*)TSEL);
+                code=code_s1->code;                                             // make cond_code 
+                code_s1 = codegen(vector_ref(a->table,1),env,TRUE);             // make true_code
+                code1=code_s1->code;type1=code_s1->type;
+                code_s1 = codegen(vector_ref(a->table,2),env,TRUE);             // make false_code
+                code2=code_s1->code;type2=code_s1->type;
+                if (tail) push(code,(void*)TSEL); else push(code,(void*)SEL);   
+
                 if (type1 == type2) {
-                    push(code ,(void*)code1); push(code,(void*)code2);       // push TSEL and true_code,false_code
+                    if (tail) {push(code1,(void*)RTN);push(code2,(void*)RTN);}
+                    else {push(code1,(void*)JOIN);push(code2,(void*)JOIN);}
+                    push(code ,(void*)code1); push(code,(void*)code2);       
                     return new_code(code,type1);
                 } else {
-                    if (type1 != OBJ_GEN)  push(code1,(void*)conv_op[type1][OBJ_GEN]);
-                    if (type2 != OBJ_GEN)  push(code2,(void*)conv_op[type2][OBJ_GEN]);
+                    if (type1 != OBJ_GEN)  {push(code1,(void*)conv_op[type1][OBJ_GEN]);}
+                    if (type2 != OBJ_GEN)  {push(code2,(void*)conv_op[type2][OBJ_GEN]);}
+
+                    if (tail) {push(code1,(void*)RTN);push(code2,(void*)RTN);}
+                    else {push(code1,(void*)JOIN);push(code2,(void*)JOIN);}
                     push(code,(void*)code1);push(code,(void*)code2);
                     return new_code(code,OBJ_GEN);
                 }
-            } else {    // -> cond_code SEL true_code+JOIN false_code+JOIN
-                //code = codegen(vector_ref(a -> table, 0),env,FALSE);
-                printf("if in!\n");
-                code_s1 = codegen(vector_ref(a -> table, 0),env,FALSE);
-                code=code_s1->code;// disassy(code,0,stdout);                               // make cond_code 
-                //code1 = codegen(vector_ref(a->table,1),env,TRUE);push(code1,(void*)JOIN); 
-                code_s1 = codegen(vector_ref(a->table,1),env,TRUE);            // make true_code
-                code1=code_s1->code;type1=code_s1->type;push(code1,(void*)JOIN);//disassy(code1,0,stdout);
-                //code2 = codegen(vector_ref(a->table,2),env,TRUE);push(code2,(void*)JOIN); 
-                code_s1 = codegen(vector_ref(a->table,2),env,TRUE);            // make false_code
-                code2=code_s1->code;type2=code_s1->type;push(code2,(void*)JOIN);//disassy(code2,0,stdout);
-                push(code, (void * )SEL); 
-                if (type1 == type2) {
-                    push(code ,(void*)code1); push(code,(void*)code2);       // push TSEL and true_code,false_code
-                    return new_code(code,type1);
-                } else {
-                    if (type1 != OBJ_GEN)  push(code1,(void*)conv_op[type1][OBJ_GEN]);
-                    if (type2 != OBJ_GEN)  push(code2,(void*)conv_op[type2][OBJ_GEN]);
-                    push(code,(void*)code1);push(code,(void*)code2);
-                    return new_code(code,OBJ_GEN);
-                }
-            }
         case AST_SET:// AST_SET [set_type, AST_left_expr, AST_right_expr]
                 switch(((ast*)vector_ref(a->table,1))->type) {
                     case AST_VREF:  // AST_SET [set_type, AST_VREF [vect_expr,index] ], right_expr]
