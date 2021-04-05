@@ -81,7 +81,7 @@ Vector * var_location(Symbol * varname, Vector * env) { // env: [[(sym00:type00)
     int i,j;
     Vector * v, * nv, * rv;//printf("varname:%s\n",varname->_table);
     //obj_type type; 
-    //if (is_stac_empty(env)) return NULL; 
+    if (is_stac_empty(env)) return NULL; 
     for(i = 0; i< env->_sp; i ++ ) {
         v = vector_ref(env,env->_sp-i-1);//vector_print(v);
         for (j = 0; j<v -> _sp; j ++ ) {//printf("env%d:%s\n",j,((Symbol*)vector_ref(v,j))->_table);printf("%d\n",symbol_eq(varname,vector_ref(v,j)));
@@ -120,6 +120,22 @@ code_ret*new_code(Vector*code,obj_type type) {
     return r;
 }
 
+void* create_zero(obj_type type) {
+    void* r;
+    mpz_ptr z=(mpz_ptr)malloc(sizeof(MP_INT));
+    mpq_ptr q=(mpq_ptr)malloc(sizeof(MP_RAT));
+
+    double* d;
+    switch(type) {
+        case OBJ_NONE:
+        case OBJ_INT:return (void*)0;
+        case OBJ_LINT:mpz_init(z); return (void*)z;
+        case OBJ_RAT:mpq_init(q);return (void*)q;
+        case OBJ_FLT:d=(double*)malloc(sizeof(double));*d=0;return (void*)d;
+        case OBJ_SYM:return (void*)new_symbol("",0);
+        case OBJ_VECT:return (void*)vector_init(0);
+    }
+}
 
 code_ret * codegen(ast * a, Vector * env, int tail) {
     Vector * code = vector_init(10), *code1, *code2,*v,*v1,*v2,*v3,*a_arg_v,*d_arg_v,*pos,*_pos,*args,*v_expr_body;
@@ -251,16 +267,20 @@ code_ret * codegen(ast * a, Vector * env, int tail) {
                         return codegen(new_ast(AST_SET,a2->o_type,v2),env,FALSE);
                     case AST_VAR:   // AST_SET [set_type, AST_VAR [var_name], right_expr]
                                     //          <0,0>             <1,0>       <2>
-                        _pos=var_location((Symbol*)vector_ref(((ast*)vector_ref(a->table,1))->table,0),env);
-                        pos=(Vector*)vector_ref(_pos,0);type1=(obj_type)(long)vector_ref(_pos,1);
                         code_s=codegen((ast*)vector_ref(a->table,2),env,FALSE);
                         code=code_s->code;type2=code_s->type;
+                        s=(Symbol*)vector_ref(((ast*)vector_ref(a->table,1))->table,0);
+                        _pos=var_location(s,env);
                         if (pos) {
+                            pos=(Vector*)vector_ref(_pos,0);
+                            type1=(obj_type)(long)vector_ref(_pos,1);
                             if (type1 != type2) push(code,(void*)conv_op[type2][type1]);
                             push(code,(void*)SET);push(code,(void*)pos);
                         } else {
+                            if ((gvt=get_gv(s))==NULL) {printf("SyntaxError:variable not defined!");return NULL;}
+                            type1=gvt->type;
                             if (type1 != type2) push(code,(void*)conv_op[type2][type1]);
-                            push(code,(void*)GSET);push(code,(void*)vector_ref(((ast*)vector_ref(a->table,1))->table,0));
+                            push(code,(void*)GSET);push(code,(void*)s);
                         }
                         return new_code(code,type2);
                     default:printf("jhdjadjaw4yy87wfhwj\n");
@@ -303,10 +323,10 @@ code_ret * codegen(ast * a, Vector * env, int tail) {
                 if (a2->type==AST_VAR) {
                     if (get_gv(s=(Symbol*)vector_ref(a2->table,0))!=NULL) {printf("syntaxError:DupricateDifinition!\n");return NULL;}
                     printf("!!!!\n");
-                    gvt=new_gvt(a2->o_type);
+                    gvt=new_gvt(a1->o_type);type1=a1->o_type;
                     //if (a2->o_type==OBJ_UFUNC) {gvt->arg_type=a1->}
                     put_gv(s,gvt);
-                    push(code,(void*)LDC);push(code,(void*)0);push(code,(void*)GSET);push(code,(void*)s);push(code,(void*)DROP);
+                    push(code,(void*)LDC);push(code,create_zero(type1));push(code,(void*)GSET);push(code,(void*)s);push(code,(void*)DROP);
                     //return new_code(code,OBJ_NONE);
                 } else if (a2->type==AST_SET &&                                 // a2: AST_SET [set_type, AST_VAR [var_name], expr_ast]
                             ((ast*)vector_ref(a2->table,1))->type==AST_VAR) {   //                        <1>                 <2>
@@ -426,10 +446,17 @@ code_ret * codegen(ast * a, Vector * env, int tail) {
             push(code,(void*)REF);
             return new_code(code,OBJ_GEN);
         case AST_VAR:   // AST_VAR [var_symbol]
-            _pos=var_location((Symbol*)vector_ref(a->table,0),env);
-            pos=(Vector*)vector_ref(_pos,0);type1=(obj_type)vector_ref(_pos,1);
-            if (pos) {push(code,(void*)LD);push(code,(void*)pos);}
-            else {push(code,(void*)LDG);push(code,(void*)vector_ref(a->table,0));}
+            _pos=var_location((Symbol*)vector_ref(a->table,0),env);printf("var_location OK!!\n");
+            if (pos) {
+                pos=(Vector*)vector_ref(_pos,0);type1=(obj_type)vector_ref(_pos,1);
+                push(code,(void*)LD);push(code,(void*)pos);
+            } else {
+                s=(Symbol*)vector_ref(a->table,0);
+                if (get_gv(s) == NULL) {printf("SyntaxError :Global value not defined!\n");return NULL;}
+                gvt=get_gv(s);
+                type1=gvt->type;
+                push(code,(void*)LDG);push(code,(void*)vector_ref(a->table,0));
+            }
             // ... constant macro ...
             return new_code(code,type1);
         case AST_LIT:   // AST_LIT [lit_type,lit_symbol]

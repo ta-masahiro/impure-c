@@ -973,6 +973,7 @@ char * objtype2str(obj_type type, void* value) {
     char *buf = (char*)malloc(1024*sizeof(char));   /* オーバーフローの可能性ありあとで見直すこと */
     mp_exp_t e;
     int i,n;
+    if (type != OBJ_NONE && value==NULL) return "NULL";
     switch(type){
         case OBJ_INT:   sprintf(buf, "%ld", (long)value); return buf;
         case OBJ_LINT:  return mpz_get_str(NULL, 10, (mpz_ptr)value);
