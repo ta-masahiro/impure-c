@@ -68,7 +68,7 @@ void * eval(Vector * S, Vector * E, Vector * Code, Vector * R, Vector * EE, Hash
             &&_IINC,  &&_LTOO, &&_FTOO,&&_IJTOO,&&_SPR ,&&_LDIV,&&_OLT, &&_LT,   &&_ILT ,&&_GT,  &&_IGT, &&_OGT, &&_GEQ, &&_IGEQ, \
             &&_OGEQ,  &&_NEG,  &&_INEG,&&_ONEG, &&_BNOT,&&_APL, &&_TAPL,&&_FEQ,  &&_FLEQ,&&_FGEQ,&&_FLT, &&_FGT, &&_LEQ, &&_LLEQ, \
             &&_LGEQ,  &&_LLT,  &&_LGT, &&_RADD, &&_RSUB,&&_RMUL,&&_RDIV,&&_REQ,  &&_RLEQ,&&_RGEQ,&&_RLT, &&_RGT, &&_ITOR,&&_ITOF, \
-            &&_LTOR,  &&_LTOF, &&_RTOF,&&_RTOO, &&_LTOI,&&_RTOI,&&_RTOL,&&_FTOI, &&_FTOL,&&_FTOR,&&_LNEG,&&_RNEG,&&_FNEG,&&_OTOF, \
+            &&_LTOR,  &&_LTOF, &&_RTOF,&&_RTOO, &&_LTOI,&&_RTOI,&&_RTOL,&&_FTOI, &&_FTOL,&&_FTOR,&&_LNEG,&&_RNEG,&&_FNEG,&&_LINC, \
             &&_LDEC,  &&_NEQ,  &&_INEQ,&&_LNEQ, &&_RNEQ,&&_FNEQ,&&_ONEQ,&&_OTOI, &&_OTOL,&&_OTOR,&&_VTOO,&&_STOO  };
  
     C = tosqs(Code,table);//vector_print(C);
@@ -313,7 +313,7 @@ _RMUL:
     qz = (mpq_ptr)malloc(sizeof(MP_RAT));
     mpq_init(qz);
     mpq_mul(qz,qx,qy);
-    push(S, (void * )z);
+    push(S, (void * )qz);
     goto * dequeue(C);
 _ODIV:
     o = (object*)pop(S);
@@ -341,7 +341,7 @@ _RDIV:
     qz = (mpq_ptr)malloc(sizeof(MP_RAT));
     mpq_init(qz);
     mpq_div(qz,qx,qy);
-    push(S, (void * )z);
+    push(S, (void * )qz);
     goto * dequeue(C);
 _OEQ:
     push(S, (void * )(long)objeq((object*)pop(S), (object*)pop(S)));
@@ -479,6 +479,7 @@ _RNEG:
 _FNEG:
     fz=(double*)malloc(sizeof(double));
     *fz=-(*(double*)pop(S));
+    push(S,(void*)fz);
     goto * dequeue(C);
 _BNOT:
     push(S, (void * )(long)(~(long)pop(S)));

@@ -64,6 +64,7 @@ Vector * vector_append(Vector*v1,Vector*v2) {
 
 void vector_print(Vector * s) {
     int i;
+    if (s==NULL) {printf("None\n");return;}
     printf("[ ");  
     for(i = s->_cp; i< s ->_sp; i ++ ) {
         printf("%ld ", (long)(s ->_table[i])); 

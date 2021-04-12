@@ -962,6 +962,7 @@ char * objtostr(object * o) {
                         }
                         strcat(buf," ]");
                         return buf;
+        case OBJ_UFUNC: sprintf(buf,"<UserFunction: %lx>",(long)o->data.ptr);return buf;
         default:printf("RntimeError:Illegal print args!\n");
     }
 }
@@ -973,7 +974,7 @@ char * objtype2str(obj_type type, void* value) {
     char *buf = (char*)malloc(1024*sizeof(char));   /* オーバーフローの可能性ありあとで見直すこと */
     mp_exp_t e;
     int i,n;
-    if (type != OBJ_NONE && value==NULL) return "NULL";
+    //if (type != OBJ_NONE && value==NULL) return "NULL";
     switch(type){
         case OBJ_INT:   sprintf(buf, "%ld", (long)value); return buf;
         case OBJ_LINT:  return mpz_get_str(NULL, 10, (mpz_ptr)value);
@@ -995,6 +996,7 @@ char * objtype2str(obj_type type, void* value) {
                         }
                         strcat(buf," ]");
                         return buf;
+        case OBJ_UFUNC:PR(13); sprintf(buf,"<UserFunction: %lx>",(long)value);return buf;
     }
 }
 

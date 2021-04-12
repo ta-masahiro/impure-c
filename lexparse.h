@@ -74,6 +74,8 @@ ast * new_ast(ast_type type, Vector * table) {
     return a; 
 }
 */
+extern char*dcl_string[];
+
 Stream  * new_stream(FILE * f);  
 //Symbol * new_symbol(unsigned char * str, unsigned long size);  
 token * new_token(int type, Symbol * s, void * val, Stream * S); 
