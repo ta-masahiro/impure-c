@@ -12,7 +12,7 @@ char * code_name[] =
      "LGEQ",  "LLT",  "LGT", "RADD", "RSUB","RMUL","RDIV","REQ",  "RLEQ","RGEQ","RLT", "RGT", "ITOR", "OTOF",
      "LTOR",  "LTOF", "RTOF", "RTOO","LTOI","RTOI","RTOL","FTOI", "FTOL","FTOR", "LNEG","RNEG","FNEG","LINC",
      "LDEC",  "NEQ",  "INEQ", "LNEQ","RNEQ","FNEQ","ONEQ","OTOI", "OTOL","OTOR","VTOO", "STOO","IPOW","LPOW",
-     "RPOW",  "FPOW", "OPOW", "$$$" };
+     "RPOW",  "FPOW", "OPOW", "IMOD","LMOD","RMOD","FMOD","OMOD", "$$$" };
 
 int op_size[] = \
     {   0,    1,     1,    0,    1,    0,   2,   0,    1,   1,   0,    1,    1,    0,    \
@@ -25,7 +25,7 @@ int op_size[] = \
         0,    0,     0,    0,    0,    0,   0,   0,    0,   0,   0,    0,    0,    0,    \
         0,    0,     0,    0 ,   0,    0,   0,   0,    0,   0,   0,    0,    0,    0,    \
         0,    0,     0,    0,    0,    0,   0,   0,    0,   0,   0,    0,    0,    0,    \
-        0,    0,     0,    0  };
+        0,    0,     0,    0,    0,    0,   0,   0,    0  };
 
 Vector *tosqs(Vector*code, const void** table) {
     enum CODE op;
@@ -72,7 +72,7 @@ void * eval(Vector * S, Vector * E, Vector * Code, Vector * R, Vector * EE, Hash
             &&_LGEQ,  &&_LLT,  &&_LGT, &&_RADD, &&_RSUB,&&_RMUL,&&_RDIV,&&_REQ,  &&_RLEQ,&&_RGEQ,&&_RLT, &&_RGT, &&_ITOR,&&_ITOF, \
             &&_LTOR,  &&_LTOF, &&_RTOF,&&_RTOO, &&_LTOI,&&_RTOI,&&_RTOL,&&_FTOI, &&_FTOL,&&_FTOR,&&_LNEG,&&_RNEG,&&_FNEG,&&_LINC, \
             &&_LDEC,  &&_NEQ,  &&_INEQ,&&_LNEQ, &&_RNEQ,&&_FNEQ,&&_ONEQ,&&_OTOI, &&_OTOL,&&_OTOR,&&_VTOO,&&_STOO,&&_IPOW,&&_LPOW, \
-            &&_RPOW,  &&_FPOW, &&_OPOW };
+            &&_RPOW,  &&_FPOW, &&_OPOW,&&_IMOD, &&_LMOD,&&_RMOD,&&_FMOD,&&_OMOD };
  
     C = tosqs(Code,table);//vector_print(C);
     w = (mpz_ptr)malloc(sizeof(MP_INT)); mpz_init(w);
@@ -698,9 +698,9 @@ _STOO:
     push(S,(void*)newSTR((Symbol*)pop(S)));
     goto*dequeue(C);
 _IPOW:
-    n=1;j=(long)pop(S);i=(long)pop(S);
+    n=1;p=1;j=(long)pop(S);i=(long)pop(S);
     if (j<0) {push(S,(void*)0);goto *dequeue(C);}
-    if (i<0) {i=-i; if (j%2) p=-1; else p=1; } 
+    if (i<0) {i=-i; if (j%2) p=-1;} 
     while (j>0) {
         if (j & 1) n*=i;
         i*=i;j/=2;
@@ -732,7 +732,39 @@ _OPOW:
     o=(object*)pop(S);
     push(S,objpow(o,(object*)pop(S)));
     goto*dequeue(C);
-
+_IMOD:
+    j=(long)pop(S);i=(long)(pop(S));
+    push(S,(void*)(i % j));
+    goto*dequeue(C);
+_LMOD:
+    y=(mpz_ptr)pop(S);x=(mpz_ptr)pop(S);
+    z = (mpz_ptr)malloc(sizeof(MP_INT));
+    mpz_init(z);
+    mpz_tdiv_r (z, x, y);
+    push(S,(void * )z);
+    goto *dequeue(C);
+_RMOD:
+    qy=(mpq_ptr)pop(S);qx=(mpq_ptr)pop(S);
+    qz = (mpq_ptr)malloc(sizeof(MP_RAT));
+    w = (mpz_ptr)malloc(sizeof(MP_INT));
+    mpq_init(qz);mpz_init(w);
+    mpq_div(qz, qx, qy);
+    mpz_tdiv_q(w, mpq_numref(qz),mpq_denref(qz));
+    mpq_set_z(qz,w);
+    mpq_mul(qz,qz,qy);
+    mpq_sub(qz,qx,qz);
+    push(S,(void*)qz);
+    goto*dequeue(C);
+_FMOD:
+    fy=(double*)pop(S);fx=(double*)pop(S);
+    fz=(double*)malloc(sizeof(double));
+    (*fz)=(*fx)-(*fy)*(double)(long)((*fx)/(*fy));
+    push(S,(void*)fz);
+    goto*dequeue(C);
+_OMOD:
+    o=(object*)pop(S);
+    push(S,objmod(o,(object*)pop(S)));
+    goto*dequeue(C);
 
 }
 /*

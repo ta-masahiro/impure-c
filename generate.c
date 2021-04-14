@@ -3,17 +3,17 @@
 
 void disassy(Vector*v,int i,FILE*fp);
 
-int op2_1[] = {'+', '-', '*', '/', '*'*256+'*','>', '<', '='*256+'=', '!'*256+'=', '>'*256+'=', '<'*256+'=',0};
-enum CODE op2_2[7][12] = {{0,0,0,0,0,0,0,0,0,0,0,0},    
-              //{ADD,  SUB,  MUL,  DIV,  POW,  GT,  LT,  EQ,  NEQ,  GEQ,  LEQ , 0},
-                {IADD, ISUB, IMUL, IDIV, IPOW, IGT, ILT, IEQ, INEQ, IGEQ, ILEQ, 0},
-                {LADD, LSUB, LMUL, LDIV, LPOW, LGT, LLT, LEQ, LNEQ, LGEQ, LLEQ, 0},
-                {RADD, RSUB, RMUL, RDIV, RPOW, RGT, RLT, REQ, RNEQ, RGEQ, RLEQ, 0},
-                {FADD, FSUB, FMUL, FDIV, FPOW, FGT, FLT, FEQ, FNEQ, FGEQ, FLEQ, 0},
+int op2_1[] = {'+', '-', '*', '/', '%', '*'*256+'*','>', '<', '='*256+'=', '!'*256+'=', '>'*256+'=', '<'*256+'=',0};
+enum CODE op2_2[7][13] = {{0,0,0,0,0,0,0,0,0,0,0,0,0},    
+              //{ADD,  SUB,  MUL,  DIV,  MOD,  POW,  GT,  LT,  EQ,  NEQ,  GEQ,  LEQ , 0},
+                {IADD, ISUB, IMUL, IDIV, IMOD, IPOW, IGT, ILT, IEQ, INEQ, IGEQ, ILEQ, 0},
+                {LADD, LSUB, LMUL, LDIV, LMOD, LPOW, LGT, LLT, LEQ, LNEQ, LGEQ, LLEQ, 0},
+                {RADD, RSUB, RMUL, RDIV, RMOD, RPOW, RGT, RLT, REQ, RNEQ, RGEQ, RLEQ, 0},
+                {FADD, FSUB, FMUL, FDIV, FMOD,FPOW, FGT, FLT, FEQ, FNEQ, FGEQ, FLEQ, 0},
                 {0,    0,    0,    0,    0,   0,   0,   0,    0,    0,    0,    0},
-                {OADD, OSUB, OMUL, ODIV, OPOW, OGT, OLT, OEQ, ONEQ, OGEQ, OLEQ, 0},
+                {OADD, OSUB, OMUL, ODIV, OMOD, OPOW, OGT, OLT, OEQ, ONEQ, OGEQ, OLEQ, 0},
                 };
-obj_type op2_3[]={0,0,0,0,0,OBJ_INT,OBJ_INT,OBJ_INT,OBJ_INT,OBJ_INT,OBJ_INT,OBJ_INT};
+obj_type op2_3[]={0,0,0,0,0,0,OBJ_INT,OBJ_INT,OBJ_INT,OBJ_INT,OBJ_INT,OBJ_INT,OBJ_INT};
 
 int op1_1[] = {'-', '~', '+'*256+'+', '-'*256+'-',0};
 enum CODE op1_2[7][4] = 
@@ -495,10 +495,10 @@ code_ret * codegen(ast * a, Vector * env, int tail) {
             } else r_type=type1;
             //printf("%d\n",ret_obj);
             code=vector_append(code1,code2);//disassy(code,0,stdin);
-            for(i=0;i<=11;i++) {
+            for(i=0;i<=12;i++) {
                 if (op2_1[i]==(int)(long)vector_ref(a->table,0)) break;
             }
-            if (i>=11) {printf("illegal 2oprand\n");return NULL;}
+            if (i>=12) {printf("illegal 2oprand\n");return NULL;}
             push(code,(void*)(long)op2_2[r_type][i]);
             if (op2_3[i] != 0) r_type=op2_3[i];
             // printf("ret_type:%d\n",ret_obj);
