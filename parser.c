@@ -106,7 +106,7 @@ ast *  is_lit(Stream*S) {
     ast *a;
     token * t = get_token(S);
     switch(t->type) {
-        case TOKEN_INT:
+        case TOKEN_INT:case TOKEN_HEX: case TOKEN_OCT: case TOKEN_BIN:
             v = vector_init(3);
             push(v, (void*)(long)t->type); push(v, (void*)t->source);
             a=new_ast(AST_LIT,OBJ_INT,v);

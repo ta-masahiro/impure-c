@@ -4,14 +4,14 @@
 void disassy(Vector*v,int i,FILE*fp);
 
 int op2_1[] = {'+', '-', '*', '/', '%', '*'*256+'*','>', '<', '='*256+'=', '!'*256+'=', '>'*256+'=', '<'*256+'=',0};
-enum CODE op2_2[7][13] = {{0,0,0,0,0,0,0,0,0,0,0,0,0},    
+enum CODE op2_2[7][13] = {{IADD, ISUB, IMUL, IDIV, IMOD, IPOW, IGT, ILT, IEQ, INEQ, IGEQ, ILEQ, 0,}, // OBJ_NONEはINTと同じに   
               //{ADD,  SUB,  MUL,  DIV,  MOD,  POW,  GT,  LT,  EQ,  NEQ,  GEQ,  LEQ , 0},
-                {IADD, ISUB, IMUL, IDIV, IMOD, IPOW, IGT, ILT, IEQ, INEQ, IGEQ, ILEQ, 0},
-                {LADD, LSUB, LMUL, LDIV, LMOD, LPOW, LGT, LLT, LEQ, LNEQ, LGEQ, LLEQ, 0},
-                {RADD, RSUB, RMUL, RDIV, RMOD, RPOW, RGT, RLT, REQ, RNEQ, RGEQ, RLEQ, 0},
-                {FADD, FSUB, FMUL, FDIV, FMOD,FPOW, FGT, FLT, FEQ, FNEQ, FGEQ, FLEQ, 0},
-                {0,    0,    0,    0,    0,   0,   0,   0,    0,    0,    0,    0},
-                {OADD, OSUB, OMUL, ODIV, OMOD, OPOW, OGT, OLT, OEQ, ONEQ, OGEQ, OLEQ, 0},
+                {IADD, ISUB, IMUL, IDIV, IMOD, IPOW, IGT, ILT, IEQ, INEQ, IGEQ, ILEQ, 0},   // OBJ_INT
+                {LADD, LSUB, LMUL, LDIV, LMOD, LPOW, LGT, LLT, LEQ, LNEQ, LGEQ, LLEQ, 0},   // OBJ_LINT
+                {RADD, RSUB, RMUL, RDIV, RMOD, RPOW, RGT, RLT, REQ, RNEQ, RGEQ, RLEQ, 0},   // OBJ_RAT
+                {FADD, FSUB, FMUL, FDIV, FMOD, FPOW, FGT, FLT, FEQ, FNEQ, FGEQ, FLEQ, 0},   // OBJ_FLT
+                {0,    0,    0,    0,    0,   0,   0,   0,    0,    0,    0,    0},         // OBJ_LFLT
+                {OADD, OSUB, OMUL, ODIV, OMOD, OPOW, OGT, OLT, OEQ, ONEQ, OGEQ, OLEQ, 0},   // OBJ_GEN
                 };
 obj_type op2_3[]={0,0,0,0,0,0,OBJ_INT,OBJ_INT,OBJ_INT,OBJ_INT,OBJ_INT,OBJ_INT,OBJ_INT};
 
@@ -395,7 +395,7 @@ code_ret * codegen(ast * a, Vector * env, int tail) {
                     // printf("!!!!\n");
                     ct=new_ct(a1->o_type,OBJ_NONE,(void*)0,FALSE);
                     put_gv(s,ct);
-                    push(code,(void*)LDC);push(code,create_zero(type1));push(code,(void*)GSET);push(code,(void*)s);push(code,(void*)DROP);//PR(12);
+                    push(code,(void*)LDC);push(code,create_zero(a1->o_type));push(code,(void*)GSET);push(code,(void*)s);push(code,(void*)DROP);//PR(12);
                 } else if (a2->type==AST_SET &&                                 // a2: AST_SET [set_type, AST_VAR [var_name], expr_ast]
                             ((ast*)vector_ref(a2->table,1))->type==AST_VAR) {   //                        <1>                 <2>
                     //変数名を取り出してSymbol*sに取っておき、定義済(GVにある)ならエラー
@@ -590,6 +590,38 @@ code_ret * codegen(ast * a, Vector * env, int tail) {
                     //push(code,(void*)newFLT(fl_num));
                     //return new_code(code,OBJ_FLT);
                     return new_code(code,new_ct(OBJ_FLT,OBJ_NONE,(void*)0,FALSE));
+                case TOKEN_HEX:
+                    if (str_symbol->_size>16) { // long int
+                        z = (mpz_ptr)malloc(sizeof(MP_INT));
+                        mpz_set_str(z,str_symbol->_table,16);
+                        push(code,(void*)z);//printf("%s\n",objtype2str(OBJ_LINT,(void*)z));
+                        return new_code(code,new_ct(OBJ_LINT,OBJ_NONE,(void*)0,FALSE));
+                    } else {
+                        sscanf(str_symbol->_table,"%lx",&int_num);
+                        push(code,(void*)int_num);
+                        return new_code(code,new_ct(OBJ_INT,OBJ_NONE,(void*)0,FALSE));
+                    }
+                case TOKEN_OCT:
+                    if (str_symbol->_size>21) { // long int
+                        z = (mpz_ptr)malloc(sizeof(MP_INT));
+                        mpz_set_str(z,str_symbol->_table,8);
+                        push(code,(void*)z);//printf("%s\n",objtype2str(OBJ_LINT,(void*)z));
+                        return new_code(code,new_ct(OBJ_LINT,OBJ_NONE,(void*)0,FALSE));
+                    } else {
+                        sscanf(str_symbol->_table,"%lo",&int_num);
+                        push(code,(void*)int_num);
+                        return new_code(code,new_ct(OBJ_INT,OBJ_NONE,(void*)0,FALSE));
+                    }
+                case TOKEN_BIN:
+                    z = (mpz_ptr)malloc(sizeof(MP_INT));
+                    mpz_set_str(z,str_symbol->_table,2);
+                    if (str_symbol->_size>64) {
+                        push(code,(void*)z);//printf("%s\n",objtype2str(OBJ_LINT,(void*)z));
+                        return new_code(code,new_ct(OBJ_LINT,OBJ_NONE,(void*)0,FALSE));
+                    } else {
+                        push(code,(void*)mpz_get_ui(z));
+                        return new_code(code,new_ct(OBJ_INT,OBJ_NONE,(void*)0,FALSE));
+                    }
             }
         case AST_VECT:  // AST_VECT [AST_expr_list [AST_v1,AST_v2,...]]
                         //                          <0,0>  <0,1> ...

@@ -117,6 +117,19 @@ token * is_NUM(Stream * S, tokenstate s, char* buff ) {
                     unget_char(S);
                     return NULL;
                 }
+            } else if (c=='0') {
+                cc=get_char(S);
+                if (cc=='x' || cc=='X') {   // 16進
+                    return is_NUM(S,TOKEN_HEX,buff);                
+                } else if (cc=='o' || cc=='O') {
+                    return is_NUM(S,TOKEN_OCT,buff);                
+                } else if (cc=='b' || cc=='B') {
+                    return is_NUM(S,TOKEN_BIN,buff);                
+                } else {
+                    unget_char(S);
+                    *(buff++)=c;
+                    return is_NUM(S,TOKEN_INT,buff);
+                }
             } else if (isdigit(c)) {        // 数字で始まれば整数(仮) 
                 * (buff ++) =c; 
                 return is_NUM(S, TOKEN_INT, buff); 
@@ -209,7 +222,7 @@ token * is_NUM(Stream * S, tokenstate s, char* buff ) {
                 *(buff ++) = c; 
                 return is_NUM(S, TOKEN_FLT, buff);
             } else {
-                unget_char(S); 
+                unget_char(S);
                 return new_token(TOKEN_FLT, new_symbol(STR_BUFF, buff - STR_BUFF), (void*)0, S);
             }
         case TOKEN_EFLT:
@@ -219,6 +232,30 @@ token * is_NUM(Stream * S, tokenstate s, char* buff ) {
             } else {
                 unget_char(S); 
                 return new_token(TOKEN_EFLT, new_symbol(STR_BUFF, buff - STR_BUFF), (void*)0, S);
+            }
+        case TOKEN_HEX:
+            if ((c>='0' && c<='9') || (c>='a' && c<='f') || (c>='A' && c<='F')) {
+                *(buff++)=c;
+                return is_NUM(S,s,buff);
+            } else {
+                unget_char(S);
+                return new_token(TOKEN_HEX,new_symbol(STR_BUFF,buff-STR_BUFF),(void*)0,S);
+            }
+        case TOKEN_OCT:
+            if (c>='0' && c<='7') {
+                *(buff++)=c;
+                return is_NUM(S,s,buff);
+            } else {
+                unget_char(S);
+                return new_token(TOKEN_OCT,new_symbol(STR_BUFF,buff-STR_BUFF),(void*)0,S);
+            }
+        case TOKEN_BIN:
+            if (c>='0' && c<='1') {
+                *(buff++)=c;
+                return is_NUM(S,s,buff);
+            } else {
+                unget_char(S);
+                return new_token(TOKEN_BIN,new_symbol(STR_BUFF,buff-STR_BUFF),(void*)0,S);
             }
     }
 }

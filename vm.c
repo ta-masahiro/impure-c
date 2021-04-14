@@ -765,6 +765,16 @@ _OMOD:
     o=(object*)pop(S);
     push(S,objmod(o,(object*)pop(S)));
     goto*dequeue(C);
+_IBOR:
+    push(S,(void*)((long)pop(S) & (long)pop(S)));
+    goto*dequeue(C);
+_LBOR:
+    z=(mpz_ptr)malloc(sizeof(MP_INT));
+    mpz_and(z,(mpz_ptr)pop(S),(mpz_ptr)pop(S));
+    push(S,(void*)z);
+    goto*dequeue(C);
+_OBOR:
+
 
 }
 /*

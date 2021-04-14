@@ -809,6 +809,37 @@ object * objpow(object * x, object * y) {
     }
 }
 
+object * objor(object * x, object * y) {
+    int type_x = x -> type;
+    int type_y = y -> type;
+    object* o = (object*)malloc(sizeof(object));
+    switch(type_x) {
+        case OBJ_INT:
+            switch(type_y) {
+                case OBJ_INT:   return (x -> data.intg & y -> data.intg);
+                case OBJ_LINT:  mpz_ptr z=(mpz_ptr)malloc(sizeof(MP_INT));
+                                mpz_init_set_si(z,x->data.intg);
+                                mpz_ior(z,z,(mpz_ptr)y->data.ptr); 
+                                o->data.ptr=(void*)z;o->type=OBJ_LINT;
+                                return o;                  
+                default:printf("runtime error illegal bor op\n");return NULL;
+            }
+        case OBJ_LINT:
+            switch(type_y) {
+                case OBJ_INT:   mpz_ptr z=(mpz_ptr)malloc(sizeof(MP_INT));
+                                mpz_init_set_si(z,y->data.intg);
+                                mpz_ior(z,z,(mpz_ptr)x->data.ptr); 
+                                o->data.ptr=(void*)z;o->type=OBJ_LINT;
+                                return o;                                                    
+                case OBJ_LINT:  mpz_ptr z=(mpz_ptr)malloc(sizeof(MP_INT));
+                                mpz_init(z);
+                                mpz_ior(z,(mpz_ptr)x->dta.ptr,(mpz_ptr)y->data.ptr); 
+                                o->data.ptr=(void*)z;o->type=OBJ_LINT;
+                                return o;                                 
+                default:printf("runtime error illegal add op\n");return NULL;
+            }
+    }
+}
 int objcmp(object * x, object * y) {
     int type_x = x -> type;
     int type_y = y -> type;
