@@ -444,7 +444,7 @@ ast * is_arg_list(Stream * S) {
     obj_type o_type;
     //if (a1 = is_dcl_expr(S)) {
     if ((t=get_token(S))->type == TOKEN_SYM) {
-        if ((i=string_isin(t->source->_table,dcl_string))!=-1) o_type=i; else {unget_token(S);o_type=0;} 
+        if ((i=string_isin(t->source->_table,dcl_string))!=-1) o_type=i; else {unget_token(S);o_type=OBJ_GEN;} 
         if (a1=is_expr(S)) {
             a1->o_type=o_type;
             v=vector_init(3);
@@ -457,7 +457,7 @@ ast * is_arg_list(Stream * S) {
                 push(v,(void*)a1);
                 //if (a1 = is_dcl_expr(S)) {
                 if ((t=get_token(S))->type==TOKEN_SYM) { 
-                    if ((i=string_isin(t->source->_table,dcl_string))!=-1) o_type=i; else {unget_token(S);o_type=0;} 
+                    if ((i=string_isin(t->source->_table,dcl_string))!=-1) o_type=i; else {unget_token(S);o_type=OBJ_GEN;} 
                     if (a1=is_expr(S)) {
                         a1->o_type=o_type;
                         continue;

@@ -16,7 +16,8 @@ enum CODE { STOP,  LDC,  LD,   ADD,  CALL, RTN, SEL, JOIN, LDF, SET, LEQ,  LDG, 
             OGEQ,  NEG,  INEG, ONEG, BNOT, APL, TAPL,FEQ,  FLEQ,FGEQ,FLT,  FGT,  L_EQ, LLEQ, \
             LGEQ,  LLT,  LGT , RADD, RSUB, RMUL,RDIV,REQ,  RLEQ,RGEQ,RLT,  RGT,  ITOR, OTOF, \
             LTOR,  LTOF, RTOF, RTOO ,LTOI, RTOI,RTOL,FTOI, FTOL,FTOR,LNEG, RNEG, FNEG, LINC, \
-            LDEC,  NEQ,  INEQ, LNEQ, RNEQ, FNEQ,ONEQ,OTOI, OTOL,OTOR,VTOO, STOO };
+            LDEC,  NEQ,  INEQ, LNEQ, RNEQ, FNEQ,ONEQ,OTOI, OTOL,OTOR,VTOO, STOO, IPOW, LPOW, \
+            RPOW,  FPOW, OPOW };
 
 extern int op_size[];
 extern char*code_name[];

@@ -3,17 +3,17 @@
 
 void disassy(Vector*v,int i,FILE*fp);
 
-int op2_1[] = {'+', '-', '*', '/', '>', '<', '='*256+'=', '!'*256+'=', '>'*256+'=', '<'*256+'=',0};
-enum CODE op2_2[7][11] = {{0,0,0,0,0,0,0,0,0,0,0},    
-              //{ADD,  SUB,  MUL,  DIV,  GT,  LT,  EQ,  NEQ,  GEQ,  LEQ , 0},
-                {IADD, ISUB, IMUL, IDIV, IGT, ILT, IEQ, INEQ, IGEQ, ILEQ, 0},
-                {LADD, LSUB, LMUL, LDIV, LGT, LLT, LEQ, LNEQ, LGEQ, LLEQ, 0},
-                {RADD, RSUB, RMUL, RDIV, RGT, RLT, REQ, RNEQ, RGEQ, RLEQ, 0},
-                {FADD, FSUB, FMUL, FDIV, FGT, FLT, FEQ, FNEQ, FGEQ, FLEQ, 0},
-                {0,    0,    0,    0,    0,   0,   0,   0,    0,    0,    0},
-                {OADD, OSUB, OMUL, ODIV, OGT, OLT, OEQ, ONEQ, OGEQ, OLEQ, 0},
+int op2_1[] = {'+', '-', '*', '/', '*'*256+'*','>', '<', '='*256+'=', '!'*256+'=', '>'*256+'=', '<'*256+'=',0};
+enum CODE op2_2[7][12] = {{0,0,0,0,0,0,0,0,0,0,0,0},    
+              //{ADD,  SUB,  MUL,  DIV,  POW,  GT,  LT,  EQ,  NEQ,  GEQ,  LEQ , 0},
+                {IADD, ISUB, IMUL, IDIV, IPOW, IGT, ILT, IEQ, INEQ, IGEQ, ILEQ, 0},
+                {LADD, LSUB, LMUL, LDIV, LPOW, LGT, LLT, LEQ, LNEQ, LGEQ, LLEQ, 0},
+                {RADD, RSUB, RMUL, RDIV, RPOW, RGT, RLT, REQ, RNEQ, RGEQ, RLEQ, 0},
+                {FADD, FSUB, FMUL, FDIV, FPOW, FGT, FLT, FEQ, FNEQ, FGEQ, FLEQ, 0},
+                {0,    0,    0,    0,    0,   0,   0,   0,    0,    0,    0,    0},
+                {OADD, OSUB, OMUL, ODIV, OPOW, OGT, OLT, OEQ, ONEQ, OGEQ, OLEQ, 0},
                 };
-obj_type op2_3[]={0,0,0,0,OBJ_INT,OBJ_INT,OBJ_INT,OBJ_INT,OBJ_INT,OBJ_INT,OBJ_INT};
+obj_type op2_3[]={0,0,0,0,0,OBJ_INT,OBJ_INT,OBJ_INT,OBJ_INT,OBJ_INT,OBJ_INT,OBJ_INT};
 
 int op1_1[] = {'-', '~', '+'*256+'+', '-'*256+'-',0};
 enum CODE op1_2[7][4] = 
@@ -214,6 +214,7 @@ code_ret * codegen(ast * a, Vector * env, int tail) {
                     for(j=0;j<((ast*)vector_ref(a1->table,0))->table->_sp;j++) {
                         a2 = (ast*)vector_ref(((ast*)vector_ref(a1->table,0))->table,j);//ast_print(a2,0);
                         if (a2->type==AST_VAR) {                                        // a2:AST_VAR [symbol_var_name_]
+                            a2->o_type=a1->o_type;
                             v=vector_init(2);
                             push(v,(void*)TOKEN_NONE);push(v,(void*)NULL);
                             push(a_arg_v,new_ast(AST_LIT,OBJ_NONE,v));                           // a_arg_v:actual arg list
@@ -258,8 +259,8 @@ code_ret * codegen(ast * a, Vector * env, int tail) {
                 //
                 v3=vector_init(3);
                 push(v3,(void*)a1);
-                push(v3,(void*)new_ast(AST_EXP_LIST,OBJ_NONE,a_arg_v));   // actual arg list
-                a2=new_ast(AST_FCALL,a1->o_type,v3);//ast_print(a2,0);                   // AST_FCALL [AST_LAMBDA [AST_EXP_LIST [..],AST_ML [...]],AST_EXP_LIST [...]]
+                push(v3,(void*)new_ast(AST_EXP_LIST,OBJ_NONE,a_arg_v));ast_print(new_ast(AST_EXP_LIST,OBJ_NONE,a_arg_v),0);   // actual arg list
+                a2=new_ast(AST_FCALL,a1->o_type,v3);ast_print(a2,0);                   // AST_FCALL [AST_LAMBDA [AST_EXP_LIST [..],AST_ML [...]],AST_EXP_LIST [...]]
                 return codegen(a2,env,tail);
             }
         case AST_IF:    // AST_IF,[cond_expr,true_expr,false_expr]
@@ -272,11 +273,12 @@ code_ret * codegen(ast * a, Vector * env, int tail) {
                 code2=code_s1->code;ct2=code_s1->ct;
                 if (tail) push(code,(void*)TSEL); else push(code,(void*)SEL);   
 
-                if (ct->type == ct2->type || ct->type==OBJ_NONE || ct2->type==OBJ_NONE) {
+                if (ct->type == ct2->type || ct->type==OBJ_NONE || ct2->type==OBJ_NONE) { // 暫定処置
                     if (tail) {push(code1,(void*)RTN);push(code2,(void*)RTN);}
                     else {push(code1,(void*)JOIN);push(code2,(void*)JOIN);}
-                    push(code ,(void*)code1); push(code,(void*)code2);       
-                    return new_code(code,ct1);
+                    push(code ,(void*)code1); push(code,(void*)code2); 
+                    if (ct1->type >= ct2->type) return new_code(code,ct1);      
+                    return new_code(code,ct2);
                 } else {
                     if (ct1->type != OBJ_GEN)  {push(code1,(void*)conv_op[ct1->type][OBJ_GEN]);}
                     if (ct2->type != OBJ_GEN)  {push(code2,(void*)conv_op[ct2->type][OBJ_GEN]);}
@@ -324,12 +326,13 @@ code_ret * codegen(ast * a, Vector * env, int tail) {
                         if (_pos) {
                             pos=(Vector*)vector_ref(_pos,0);
                             ct1=(code_type*)(long)vector_ref(_pos,1);
-                            if (ct1 != ct2) push(code,(void*)conv_op[ct2->type][ct1->type]);
+                            if (ct1->type != ct2->type) push(code,(void*)conv_op[ct2->type][ct1->type]);
                             push(code,(void*)SET);push(code,(void*)pos);
                         } else {
-                            if ((ct1=get_gv(s))==NULL) {printf("SyntaxError:variable not defined!");return NULL;}
-                            //type1=ct->type;
-                            if (ct1->type==OBJ_NONE || (ct1->type == OBJ_UFUNC && ct1->functon_ret_type ==0 )) {
+                            if ((ct1=get_gv(s))==NULL) {
+                                //printf("SyntaxError:variable not defined!");return NULL;
+                                put_gv(s,ct2);ct1=ct2;
+                            } else if (ct1->type==OBJ_NONE || (ct1->type == OBJ_UFUNC && ct1->functon_ret_type ==0 )) {
                                 ct1=ct2;put_gv(s,ct1);
                                 //if (ct2->type==OBJ_UFUNC) {gvt->type=OBJ_UFUNC;gvt->arg_type=v;gvt->functon_ret_type=r_type;put_gv(s,gvt);}
                             }else if (ct1->type != ct2->type) push(code,(void*)conv_op[ct2->type][ct1->type]);
@@ -492,10 +495,10 @@ code_ret * codegen(ast * a, Vector * env, int tail) {
             } else r_type=type1;
             //printf("%d\n",ret_obj);
             code=vector_append(code1,code2);//disassy(code,0,stdin);
-            for(i=0;i<=10;i++) {
+            for(i=0;i<=11;i++) {
                 if (op2_1[i]==(int)(long)vector_ref(a->table,0)) break;
             }
-            if (i>=10) {printf("illegal 2oprand\n");return NULL;}
+            if (i>=11) {printf("illegal 2oprand\n");return NULL;}
             push(code,(void*)(long)op2_2[r_type][i]);
             if (op2_3[i] != 0) r_type=op2_3[i];
             // printf("ret_type:%d\n",ret_obj);

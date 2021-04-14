@@ -72,6 +72,7 @@ object * objRSUB(mpq_ptr x, mpq_ptr y) ;
 object * objRMUL(mpq_ptr x, mpq_ptr y) ;
 object * objRDIV(mpq_ptr x, mpq_ptr y) ;
 object * objRMOD(mpq_ptr x, mpq_ptr y) ;
+object * objRPOW(mpq_ptr x, long y);
 object * objFADD(double x, double y) ;
 object * objFSUB(double x, double y) ;
 object * objFMUL(double x, double y) ;

@@ -11,7 +11,8 @@ char * code_name[] =
      "OGEQ",  "NEG",  "INEG","ONEG", "BNOT","APL", "TAPL","FEQ",  "FLEQ","FGEQ","FLT", "FGT", "LEQ",  "LLEQ",
      "LGEQ",  "LLT",  "LGT", "RADD", "RSUB","RMUL","RDIV","REQ",  "RLEQ","RGEQ","RLT", "RGT", "ITOR", "OTOF",
      "LTOR",  "LTOF", "RTOF", "RTOO","LTOI","RTOI","RTOL","FTOI", "FTOL","FTOR", "LNEG","RNEG","FNEG","LINC",
-     "LDEC",  "NEQ",  "INEQ", "LNEQ","RNEQ","FNEQ","ONEQ","OTOI", "OTOL","OTOR","VTOO", "STOO","$$$" };
+     "LDEC",  "NEQ",  "INEQ", "LNEQ","RNEQ","FNEQ","ONEQ","OTOI", "OTOL","OTOR","VTOO", "STOO","IPOW","LPOW",
+     "RPOW",  "FPOW", "OPOW", "$$$" };
 
 int op_size[] = \
     {   0,    1,     1,    0,    1,    0,   2,   0,    1,   1,   0,    1,    1,    0,    \
@@ -23,7 +24,8 @@ int op_size[] = \
         0,    0,     0,    0,    0,    1,   1 ,  0,    0,   0,   0,    0,    0,    0,    \
         0,    0,     0,    0,    0,    0,   0,   0,    0,   0,   0,    0,    0,    0,    \
         0,    0,     0,    0 ,   0,    0,   0,   0,    0,   0,   0,    0,    0,    0,    \
-        0,    0,     0,    0,    0,    0,   0,   0,    0,   0,   0,    0,    0  };
+        0,    0,     0,    0,    0,    0,   0,   0,    0,   0,   0,    0,    0,    0,    \
+        0,    0,     0,    0  };
 
 Vector *tosqs(Vector*code, const void** table) {
     enum CODE op;
@@ -69,7 +71,8 @@ void * eval(Vector * S, Vector * E, Vector * Code, Vector * R, Vector * EE, Hash
             &&_OGEQ,  &&_NEG,  &&_INEG,&&_ONEG, &&_BNOT,&&_APL, &&_TAPL,&&_FEQ,  &&_FLEQ,&&_FGEQ,&&_FLT, &&_FGT, &&_LEQ, &&_LLEQ, \
             &&_LGEQ,  &&_LLT,  &&_LGT, &&_RADD, &&_RSUB,&&_RMUL,&&_RDIV,&&_REQ,  &&_RLEQ,&&_RGEQ,&&_RLT, &&_RGT, &&_ITOR,&&_ITOF, \
             &&_LTOR,  &&_LTOF, &&_RTOF,&&_RTOO, &&_LTOI,&&_RTOI,&&_RTOL,&&_FTOI, &&_FTOL,&&_FTOR,&&_LNEG,&&_RNEG,&&_FNEG,&&_LINC, \
-            &&_LDEC,  &&_NEQ,  &&_INEQ,&&_LNEQ, &&_RNEQ,&&_FNEQ,&&_ONEQ,&&_OTOI, &&_OTOL,&&_OTOR,&&_VTOO,&&_STOO  };
+            &&_LDEC,  &&_NEQ,  &&_INEQ,&&_LNEQ, &&_RNEQ,&&_FNEQ,&&_ONEQ,&&_OTOI, &&_OTOL,&&_OTOR,&&_VTOO,&&_STOO,&&_IPOW,&&_LPOW, \
+            &&_RPOW,  &&_FPOW, &&_OPOW };
  
     C = tosqs(Code,table);//vector_print(C);
     w = (mpz_ptr)malloc(sizeof(MP_INT)); mpz_init(w);
@@ -167,6 +170,7 @@ _ITOO:
     goto*dequeue(C);
 _LTOI:
     push(S,(void*)mpz_get_si((mpz_ptr)pop(S)));
+    goto*dequeue(C);
 _LTOR:
     qz=(mpq_ptr)malloc(sizeof(MP_RAT));
     mpq_init(qz);
@@ -693,6 +697,42 @@ _VTOO:
 _STOO:
     push(S,(void*)newSTR((Symbol*)pop(S)));
     goto*dequeue(C);
+_IPOW:
+    n=1;j=(long)pop(S);i=(long)pop(S);
+    if (j<0) {push(S,(void*)0);goto *dequeue(C);}
+    if (i<0) {i=-i; if (j%2) p=-1; else p=1; } 
+    while (j>0) {
+        if (j & 1) n*=i;
+        i*=i;j/=2;
+    }
+    push(S,(void*)(p*n));
+    goto *dequeue(C);
+_LPOW:
+    j=mpz_get_si((mpz_ptr)pop(S));
+    x=(mpz_ptr)pop(S);
+    z=(mpz_ptr)malloc(sizeof(MP_INT));mpz_init(z);
+    mpz_pow_ui(z,x,j);
+    push(S,(void*)z);
+    goto * dequeue(C);
+_RPOW:
+    j=rtoi((mpq_ptr)pop(S));
+    qz=(mpq_ptr)pop(S);
+    x=mpq_numref(qz);mpz_pow_ui(x,x,j);
+    y=mpq_denref(qz);mpz_pow_ui(y,y,j);
+    //mpq_init(qz);
+    mpq_set_num(qz,x);mpq_set_den(qz,y);
+    push(S,(void*)qz);
+    goto *dequeue(C);
+_FPOW:
+    fy=pop(S);fx=pop(S);
+    *fz=pow((*fx),(*fy));
+    push(S,fz);
+    goto *dequeue(C);
+_OPOW:
+    o=(object*)pop(S);
+    push(S,objpow(o,(object*)pop(S)));
+    goto*dequeue(C);
+
 
 }
 /*
