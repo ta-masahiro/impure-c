@@ -65,7 +65,7 @@ void ast_print(ast*a, int tablevel) {
             break;
         case AST_LIT:
             printf("type:LIT\t");
-            printf("objecttype: %d\t",a->o_type);
+            printf("objecttype: %d\t",a->o_type);if (a->o_type==OBJ_NONE) {printf(" [ NONE ]\n"); break;}
             printf("source type:%ld\tvalue:%s\n", (long)vector_ref(a->table,0),(char * )((Symbol * )vector_ref(a->table, 1))->_table);
             break;
         case AST_VAR:
