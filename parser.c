@@ -318,13 +318,13 @@ ast * is_expr_1(Stream *S) {
 
 ast * is_expr_2(Stream * S) {
     // expr_2       : expr_1
-    //              | [-|~] expr_1
+    //              | [-|~|@] expr_1
     ast * a;
     tokentype t;
     int token_p = tokenbuff ->_cp;
     Vector*v;
 
-    if (((t = (get_token(S) -> type)) == '-') || (t == '~')){
+    if (((t = (get_token(S) -> type)) == '-') || (t == '~') || (t=='@')){
         if (a = is_expr_1(S)) {
             v = vector_init(1);
             push(v,(void*)t);push(v, (void * )a);

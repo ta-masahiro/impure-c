@@ -2,17 +2,18 @@
 //typedef void*(*Funcpointer)(Vector*);
 
 char * code_name[] = 
-    {"STOP",  "LDC",  "LD",  "ADD", "CALL", "RTN", "SEL", "JOIN", "LDF", "SET", "LEQ", "LDG", "GSET", "SUB",
-     "DEC",   "TCALL","TSEL","DROP","EQ",   "INC", "MUL", "DIV",  "VEC", "REF", "VSET","HASH","LDH",  "HSET",
-     "VPUSH", "VPOP", "LADD","LSUB","LMUL", "ITOL","LPR", "PCALL","LDM", "DUP", "SWAP","ROT", "_2ROT","CALLS",
-     "TCALLS","RTNS", "LDP", "LDL", "FADD", "FSUB","FMUL","FDIV", "FPR", "ITOF","LCPY","OADD","OSUB", "OMUL",
-     "ODIV",  "OEQ",  "OLEQ","ITOO","OPR",  "ODEC","OINC","IADD", "ISUB","IMUL","IDIV","IEQ", "ILEQ", "IDEC",
-     "IINC",  "LTOO", "FTOO","IJTOO","SPR", "LDIV","OLT", "LT"  , "ILT", "GT",  "IGT", "OGT", "GEQ",  "IGEQ",
-     "OGEQ",  "NEG",  "INEG","ONEG", "BNOT","APL", "TAPL","FEQ",  "FLEQ","FGEQ","FLT", "FGT", "LEQ",  "LLEQ",
-     "LGEQ",  "LLT",  "LGT", "RADD", "RSUB","RMUL","RDIV","REQ",  "RLEQ","RGEQ","RLT", "RGT", "ITOR", "OTOF",
-     "LTOR",  "LTOF", "RTOF", "RTOO","LTOI","RTOI","RTOL","FTOI", "FTOL","FTOR", "LNEG","RNEG","FNEG","LINC",
-     "LDEC",  "NEQ",  "INEQ", "LNEQ","RNEQ","FNEQ","ONEQ","OTOI", "OTOL","OTOR","VTOO", "STOO","IPOW","LPOW",
-     "RPOW",  "FPOW", "OPOW", "IMOD","LMOD","RMOD","FMOD","OMOD", "$$$" };
+    {"STOP",  "LDC",  "LD",  "ADD", "CALL", "RTN", "SEL", "JOIN", "LDF", "SET", "LEQ", "LDG",  "GSET", "SUB",
+     "DEC",   "TCALL","TSEL","DROP","EQ",   "INC", "MUL", "DIV",  "VEC", "REF", "VSET","HASH", "LDH",  "HSET",
+     "VPUSH", "VPOP", "LADD","LSUB","LMUL", "ITOL","LPR", "PCALL","LDM", "DUP", "SWAP","ROT",  "_2ROT","CALLS",
+     "TCALLS","RTNS", "LDP", "LDL", "FADD", "FSUB","FMUL","FDIV", "FPR", "ITOF","LCPY","OADD", "OSUB", "OMUL",
+     "ODIV",  "OEQ",  "OLEQ","ITOO","OPR",  "ODEC","OINC","IADD", "ISUB","IMUL","IDIV","IEQ",  "ILEQ", "IDEC",
+     "IINC",  "LTOO", "FTOO","IJTOO","SPR", "LDIV","OLT", "LT"  , "ILT", "GT",  "IGT", "OGT",  "GEQ",  "IGEQ",
+     "OGEQ",  "NEG",  "INEG","ONEG", "BNOT","APL", "TAPL","FEQ",  "FLEQ","FGEQ","FLT", "FGT",  "LEQ",  "LLEQ",
+     "LGEQ",  "LLT",  "LGT", "RADD", "RSUB","RMUL","RDIV","REQ",  "RLEQ","RGEQ","RLT", "RGT",  "ITOR", "OTOF",
+     "LTOR",  "LTOF", "RTOF", "RTOO","LTOI","RTOI","RTOL","FTOI", "FTOL","FTOR","LNEG","RNEG", "FNEG", "LINC",
+     "LDEC",  "NEQ",  "INEQ", "LNEQ","RNEQ","FNEQ","ONEQ","OTOI", "OTOL","OTOR","VTOO","STOO", "IPOW", "LPOW",
+     "RPOW",  "FPOW", "OPOW", "IMOD","LMOD","RMOD","FMOD","OMOD", "IBOR","LBOR","OBOR","IBNOT","LBNOT","OBNOT",
+     "IBAND", "LBAND","OBAND","VLEN","SLEN","OLEN","VAPP","SAPP", "VREF","SREF","OREF", "SSET", "OSET","$$$" };
 
 int op_size[] = \
     {   0,    1,     1,    0,    1,    0,   2,   0,    1,   1,   0,    1,    1,    0,    \
@@ -25,7 +26,8 @@ int op_size[] = \
         0,    0,     0,    0,    0,    0,   0,   0,    0,   0,   0,    0,    0,    0,    \
         0,    0,     0,    0 ,   0,    0,   0,   0,    0,   0,   0,    0,    0,    0,    \
         0,    0,     0,    0,    0,    0,   0,   0,    0,   0,   0,    0,    0,    0,    \
-        0,    0,     0,    0,    0,    0,   0,   0,    0  };
+        0,    0,     0,    0,    0,    0,   0,   0,    0,   0,   0,    0,    0,    0,    \
+        0,    0,     0,    0,    0,    0,   0,   0,    0,   0,   0,    0,    0,    0  };
 
 Vector *tosqs(Vector*code, const void** table) {
     enum CODE op;
@@ -62,17 +64,18 @@ void * eval(Vector * S, Vector * E, Vector * Code, Vector * R, Vector * EE, Hash
     double* fx,*fy,*fz;
     object*o;
     static const void * table[] = {
-            &&_STOP,  &&_LDC,  &&_LD,  &&_ADD,  &&_CALL,&&_RTN, &&_SEL, &&_JOIN, &&_LDF, &&_SET, &&_LEQ, &&_LDG, &&_GSET,&&_SUB,  \
-            &&_DEC,   &&_TCALL,&&_TSEL,&&_DROP, &&_EQ,  &&_INC, &&_MUL, &&_DIV,  &&_VEC, &&_REF, &&_VSET,&&_HASH,&&_LDH, &&_HSET, \
-            &&_VPUSH, &&_VPOP, &&_LADD,&&_LSUB, &&_LMUL,&&_ITOL,&&_LPR, &&_PCALL,&&_LDM, &&_DUP, &&_SWAP,&&_ROT, &&_2ROT,&&_CALLS,\
-            &&_TCALLS,&&_RTNS, &&_LDP, &&_LDL,  &&_FADD,&&_FSUB,&&_FMUL,&&_FDIV ,&&_FPR, &&_ITOF,&&_LCPY,&&_OADD,&&_OSUB,&&_OMUL, \
-            &&_ODIV,  &&_OEQ,  &&_OLEQ,&&_ITOO, &&_OPR ,&&_ODEC,&&_OINC,&&_IADD, &&_ISUB,&&_IMUL,&&_IDIV,&&_IEQ, &&_ILEQ,&&_IDEC, \
-            &&_IINC,  &&_LTOO, &&_FTOO,&&_IJTOO,&&_SPR ,&&_LDIV,&&_OLT, &&_LT,   &&_ILT ,&&_GT,  &&_IGT, &&_OGT, &&_GEQ, &&_IGEQ, \
-            &&_OGEQ,  &&_NEG,  &&_INEG,&&_ONEG, &&_BNOT,&&_APL, &&_TAPL,&&_FEQ,  &&_FLEQ,&&_FGEQ,&&_FLT, &&_FGT, &&_LEQ, &&_LLEQ, \
-            &&_LGEQ,  &&_LLT,  &&_LGT, &&_RADD, &&_RSUB,&&_RMUL,&&_RDIV,&&_REQ,  &&_RLEQ,&&_RGEQ,&&_RLT, &&_RGT, &&_ITOR,&&_ITOF, \
-            &&_LTOR,  &&_LTOF, &&_RTOF,&&_RTOO, &&_LTOI,&&_RTOI,&&_RTOL,&&_FTOI, &&_FTOL,&&_FTOR,&&_LNEG,&&_RNEG,&&_FNEG,&&_LINC, \
-            &&_LDEC,  &&_NEQ,  &&_INEQ,&&_LNEQ, &&_RNEQ,&&_FNEQ,&&_ONEQ,&&_OTOI, &&_OTOL,&&_OTOR,&&_VTOO,&&_STOO,&&_IPOW,&&_LPOW, \
-            &&_RPOW,  &&_FPOW, &&_OPOW,&&_IMOD, &&_LMOD,&&_RMOD,&&_FMOD,&&_OMOD };
+            &&_STOP,  &&_LDC,  &&_LD,  &&_ADD,  &&_CALL,&&_RTN, &&_SEL, &&_JOIN, &&_LDF, &&_SET, &&_LEQ, &&_LDG,  &&_GSET, &&_SUB,  \
+            &&_DEC,   &&_TCALL,&&_TSEL,&&_DROP, &&_EQ,  &&_INC, &&_MUL, &&_DIV,  &&_VEC, &&_REF, &&_VSET,&&_HASH, &&_LDH,  &&_HSET, \
+            &&_VPUSH, &&_VPOP, &&_LADD,&&_LSUB, &&_LMUL,&&_ITOL,&&_LPR, &&_PCALL,&&_LDM, &&_DUP, &&_SWAP,&&_ROT,  &&_2ROT, &&_CALLS,\
+            &&_TCALLS,&&_RTNS, &&_LDP, &&_LDL,  &&_FADD,&&_FSUB,&&_FMUL,&&_FDIV ,&&_FPR, &&_ITOF,&&_LCPY,&&_OADD, &&_OSUB, &&_OMUL, \
+            &&_ODIV,  &&_OEQ,  &&_OLEQ,&&_ITOO, &&_OPR ,&&_ODEC,&&_OINC,&&_IADD, &&_ISUB,&&_IMUL,&&_IDIV,&&_IEQ,  &&_ILEQ, &&_IDEC, \
+            &&_IINC,  &&_LTOO, &&_FTOO,&&_IJTOO,&&_SPR ,&&_LDIV,&&_OLT, &&_LT,   &&_ILT ,&&_GT,  &&_IGT, &&_OGT,  &&_GEQ,  &&_IGEQ, \
+            &&_OGEQ,  &&_NEG,  &&_INEG,&&_ONEG, &&_BNOT,&&_APL, &&_TAPL,&&_FEQ,  &&_FLEQ,&&_FGEQ,&&_FLT, &&_FGT,  &&_LEQ,  &&_LLEQ, \
+            &&_LGEQ,  &&_LLT,  &&_LGT, &&_RADD, &&_RSUB,&&_RMUL,&&_RDIV,&&_REQ,  &&_RLEQ,&&_RGEQ,&&_RLT, &&_RGT,  &&_ITOR, &&_ITOF, \
+            &&_LTOR,  &&_LTOF, &&_RTOF,&&_RTOO, &&_LTOI,&&_RTOI,&&_RTOL,&&_FTOI, &&_FTOL,&&_FTOR,&&_LNEG,&&_RNEG, &&_FNEG, &&_LINC, \
+            &&_LDEC,  &&_NEQ,  &&_INEQ,&&_LNEQ, &&_RNEQ,&&_FNEQ,&&_ONEQ,&&_OTOI, &&_OTOL,&&_OTOR,&&_VTOO,&&_STOO, &&_IPOW, &&_LPOW, \
+            &&_RPOW,  &&_FPOW, &&_OPOW,&&_IMOD, &&_LMOD,&&_RMOD,&&_FMOD,&&_OMOD ,&&_IBOR,&&_LBOR,&&_OBOR,&&_IBNOT,&&_LBNOT,&&_OBNOT,\
+            &&_IBAND, &&_LBAND,&&_OBAND,&&_VLEN,&&_SLEN,&&_OLEN,&&_VAPP,&&_SAPP, &&_VREF,&&_SREF,&&_OREF, &&_SSET, &&_OSET         };
  
     C = tosqs(Code,table);//vector_print(C);
     w = (mpz_ptr)malloc(sizeof(MP_INT)); mpz_init(w);
@@ -486,8 +489,16 @@ _FNEG:
     push(S,(void*)fz);
     goto * dequeue(C);
 _BNOT:
+_IBNOT:
     push(S, (void * )(long)(~(long)pop(S)));
     goto * dequeue(C);
+_LBNOT:
+    z=(mpz_ptr)malloc(sizeof(MP_INT));
+    mpz_com(z,z);
+    push(S,(void*)z);
+    goto*dequeue(C);
+_OBNOT:
+    push(S,(void*)objneg((object*)pop(S)));
 _CALL:
     n = (long)dequeue(C);
     fn = (Vector * )pop(S);
@@ -582,10 +593,19 @@ _VEC:
     //push(S,(void*)newVECT(l));
     goto * dequeue(C);
 _REF:
+_VREF:
     n = (long)pop(S);
     //push(S, (void * )vector_ref((Vector * )(((object*)pop(S))->data.ptr), n));
     push(S, (void * )vector_ref((Vector * )pop(S),n));
     goto * dequeue(C);
+_SREF:
+    n=(long)pop(S);
+    push(S,(void*)symbol_ref((Symbol*)pop(S),n));
+    goto*dequeue(C);
+_OREF:
+    n=(long)pop(S);
+    push(S,(void*)objref((object*)pop(S),n));
+    goto*dequeue(C);
 _VSET: // うまく動いていない！！
     n = (long)pop(S);
     l = (Vector * )pop(S);
@@ -593,6 +613,14 @@ _VSET: // うまく動いていない！！
     vector_set(l, n, v);
     push(S, v);
     goto * dequeue(C);
+_SSET:
+    n=(long)pop(S);sym=(Symbol*)pop(S);
+    push(S,(void*)symbol_set(sym,n,(Symbol*)pop(S)));
+    goto*dequeue(C);
+_OSET:
+    n=(long)pop(S);o=(object*)pop(S);
+    objset(o,n,(object*)vector_ref(S,S->_sp-1));
+    goto*dequeue(C);
 _HASH:
     n = (long)pop(S);
     h = Hash_init(n);
@@ -766,16 +794,46 @@ _OMOD:
     push(S,objmod(o,(object*)pop(S)));
     goto*dequeue(C);
 _IBOR:
-    push(S,(void*)((long)pop(S) & (long)pop(S)));
+    push(S,(void*)((long)pop(S) | (long)pop(S)));
     goto*dequeue(C);
 _LBOR:
+    z=(mpz_ptr)malloc(sizeof(MP_INT));
+    mpz_ior(z,(mpz_ptr)pop(S),(mpz_ptr)pop(S));
+    push(S,(void*)z);
+    goto*dequeue(C);
+_OBOR:
+    o=(object*)pop(S);
+    push(S,(void*)objor(o,(object*)pop(S)));    
+    goto *dequeue(S);
+_IBAND:
+    push(S,(void*)((long)pop(S) & (long)pop(S)));
+    goto*dequeue(C);
+_LBAND:
     z=(mpz_ptr)malloc(sizeof(MP_INT));
     mpz_and(z,(mpz_ptr)pop(S),(mpz_ptr)pop(S));
     push(S,(void*)z);
     goto*dequeue(C);
-_OBOR:
-
-
+_OBAND:
+    o=(object*)pop(S);
+    push(S,(void*)objand(o,(object*)pop(S)));    
+    goto *dequeue(S);
+_VLEN:
+    push(S,(void*)(long)((Vector*)pop(S))->_sp);
+    goto*dequeue(C);
+_SLEN:
+    push(S,(void*)((Symbol*)pop(S))->_size);
+    goto*dequeue(C);
+_OLEN:
+    push(S,(void*)objcpy((object*)pop(S)));
+    goto*dequeue(C);
+_VAPP:
+    v=pop(S);
+    push(S,(void*)vector_append((Vector*)pop(S),(Vector*)v));
+    goto*dequeue(C);
+_SAPP:
+    v=pop(S);
+    push(S,(void*)symbol_append((Symbol*)pop(S),(Symbol*)v));
+    goto*dequeue(C);
 }
 /*
    Vector * vector_make(void * L[], int N) {
